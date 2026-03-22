@@ -1,0 +1,132 @@
+<div class="routes-layout">
+
+  <p-toast />
+  <p-confirmDialog />
+
+  <p-toolbar styleClass="mb-4">
+    <ng-template #start>
+      <p-button icon="pi pi-arrow-left" [text]="true" (onClick)="goBack()" />
+      <span class="text-xl font-bold ml-3">Rutas</span>
+    </ng-template>
+    <ng-template #end>
+      <p-button label="Nueva ruta" icon="pi pi-plus" (onClick)="openCreateDialog()" />
+    </ng-template>
+  </p-toolbar>
+
+  <p-table
+    [value]="routes()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    styleClass="p-datatable-sm"
+    [rowHover]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Nombre</th>
+        <th>Origen</th>
+        <th>Destino</th>
+        <th>Waypoints</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-route>
+      <tr>
+        <td class="font-medium">{{ route.name }}</td>
+        <td>{{ route.origin }}</td>
+        <td>{{ route.destination }}</td>
+        <td class="text-center">{{ route.waypointCount }}</td>
+        <td><p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" /></td>
+        <td>
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                    (onClick)="confirmDelete(route)" pTooltip="Eliminar" />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="text-center text-gray-400 py-8">
+          Sin rutas. Creá una para empezar.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</div>
+
+<!-- Create Route Dialog -->
+<p-dialog
+  header="Nueva ruta"
+  [visible]="showCreateDialog()"
+  (visibleChange)="showCreateDialog.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '1100px' }"
+  [draggable]="false"
+  (onShow)="onDialogShow()"
+  (onHide)="onDialogHide()"
+>
+  <div class="dialog-grid">
+
+    <!-- Left: form fields + waypoint list -->
+    <div class="dialog-form">
+
+      <div class="field">
+        <label>Nombre *</label>
+        <input pInputText [(ngModel)]="formName" placeholder="Ej: Centro - Puerto" class="w-full" />
+      </div>
+
+      <div class="field">
+        <label>Origen *</label>
+        <input pInputText [(ngModel)]="formOrigin" placeholder="Ej: Terminal Ushuaia" class="w-full" />
+      </div>
+
+      <div class="field">
+        <label>Destino *</label>
+        <input pInputText [(ngModel)]="formDestination" placeholder="Ej: Puerto de Ushuaia" class="w-full" />
+      </div>
+
+      <div class="waypoints-list">
+        <div class="waypoints-header">
+          <span class="font-semibold text-sm">Waypoints ({{ formWaypoints.length }})</span>
+          <span class="text-xs text-gray-400">Hacé clic en el mapa para agregar</span>
+        </div>
+
+        @if (formWaypoints.length === 0) {
+          <p class="text-sm text-gray-400 text-center py-4">
+            Hacé clic en el mapa para agregar puntos
+          </p>
+        }
+
+        @for (wp of formWaypoints; track wp.order; let i = $index) {
+          <div class="waypoint-item">
+            <span class="waypoint-num">{{ i + 1 }}</span>
+            <span class="waypoint-coords">{{ wp.lat | number:'1.5-5' }}, {{ wp.lng | number:'1.5-5' }}</span>
+            <p-button icon="pi pi-times" severity="danger" [text]="true" size="small"
+                      (onClick)="removeWaypoint(i)" />
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Leaflet map -->
+    <div class="dialog-map">
+      <div #routeMapContainer class="route-map"></div>
+      <p class="map-hint">
+        <i class="pi pi-info-circle"></i>
+        Clic para agregar waypoint · Mínimo 2 puntos
+      </p>
+    </div>
+
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" [text]="true"
+              (onClick)="showCreateDialog.set(false)" />
+    <p-button label="Crear ruta" icon="pi pi-check"
+              [loading]="saving()" [disabled]="formWaypoints.length < 2"
+              (onClick)="saveRoute()" />
+  </ng-template>
+</p-dialog>

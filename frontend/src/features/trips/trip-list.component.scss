@@ -1,0 +1,39 @@
+.trips-layout {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.font-mono {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.dialog-body {
+  padding: 0.5rem 0 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  p-select {
+    width: 100%;
+
+    :host {
+      width: 100%;
+    }
+  }
+}

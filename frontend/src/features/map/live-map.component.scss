@@ -1,0 +1,84 @@
+.map-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.map-toolbar {
+  flex-shrink: 0;
+}
+
+.map-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.map-container {
+  flex: 1;
+  position: relative;
+}
+
+.side-panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  border-left: 1px solid #e2e8f0;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-header {
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #fed7d7;
+  color: #c53030;
+  font-weight: 500;
+
+  &.connected {
+    background: #c6f6d5;
+    color: #276749;
+  }
+}
+
+.trip-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.875rem;
+
+  &.deviation {
+    border-color: #fc8181;
+    background: #fff5f5;
+  }
+}
+
+.trip-id    { font-family: monospace; color: #718096; font-size: 0.75rem; }
+.trip-km    { font-weight: 600; font-size: 1rem; color: #2d3748; }
+.trip-coords { font-size: 0.75rem; color: #a0aec0; }
+
+.deviation-badge {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #c53030;
+  font-weight: 500;
+}
+
+.no-trips {
+  color: #a0aec0;
+  text-align: center;
+  padding: 32px 0;
+  font-size: 0.875rem;
+}

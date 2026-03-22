@@ -1,0 +1,77 @@
+<div class="driver-layout">
+  <p-toast />
+
+  <!-- Header -->
+  <div class="driver-header">
+    <span class="font-bold text-lg">GPS Chofer</span>
+    <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="logout()" />
+  </div>
+
+  <!-- GPS Status card -->
+  <div class="status-card" [class.active]="tracking()">
+    <div class="status-icon">
+      <i class="pi" [class.pi-map-marker]="tracking()" [class.pi-map]="!tracking()"></i>
+    </div>
+    <div>
+      <div class="font-semibold">{{ tracking() ? 'GPS Activo' : 'GPS Inactivo' }}</div>
+      @if (lastPosition()) {
+        <div class="text-sm text-gray-500">
+          {{ lastPosition()!.lat | number:'1.5-5' }}, {{ lastPosition()!.lng | number:'1.5-5' }}
+        </div>
+      }
+      @if (accuracy()) {
+        <div class="text-xs text-gray-400">Precisión: ±{{ accuracy()! | number:'1.0-0' }}m</div>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle mr-2"></i>{{ error() }}
+    </div>
+  }
+
+  <!-- Trip list -->
+  <div class="trips-section">
+    <h2 class="section-title">Mis viajes activos</h2>
+
+    @if (loading()) {
+      <div class="text-center py-8 text-gray-400">Cargando...</div>
+    }
+
+    @for (trip of trips(); track trip.id) {
+      <div class="trip-card" [class.selected]="activeTripId() === trip.id">
+        <div class="trip-info">
+          <div class="font-semibold">{{ trip.routeName ?? 'Ruta sin nombre' }}</div>
+          <div class="text-sm text-gray-500">Inicio: {{ trip.startedAt | date:'dd/MM HH:mm' }}</div>
+          <div class="text-xs font-mono text-gray-400">{{ trip.id | slice:0:8 }}...</div>
+        </div>
+        <div class="trip-actions">
+          @if (activeTripId() === trip.id) {
+            <p-button
+              label="Detener GPS"
+              icon="pi pi-stop-circle"
+              severity="danger"
+              (onClick)="stopTracking()"
+            />
+          } @else {
+            <p-button
+              label="Iniciar GPS"
+              icon="pi pi-play"
+              severity="success"
+              [disabled]="tracking()"
+              (onClick)="startTracking(trip.id)"
+            />
+          }
+        </div>
+      </div>
+    }
+
+    @if (!loading() && trips().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-inbox text-4xl text-gray-300"></i>
+        <p class="text-gray-400 mt-2">Sin viajes activos asignados</p>
+      </div>
+    }
+  </div>
+</div>

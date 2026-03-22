@@ -1,0 +1,91 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: gps_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-gpsmonitor}
+      POSTGRES_USER: ${DB_USER:-gpsuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-gpspassword}
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - gps-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-gpsuser} -d ${DB_NAME:-gpsmonitor}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: gps_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    networks:
+      - gps-net
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: production
+    container_name: gps_backend
+    env_file: .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gps-net
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: gps_frontend
+    ports:
+      - '4200:80'
+    depends_on:
+      - backend
+    networks:
+      - gps-net
+
+  caddy:
+    image: caddy:alpine
+    container_name: gps_caddy
+    ports:
+      - '80:80'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - gps-net
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  gps-net:
+    driver: bridge

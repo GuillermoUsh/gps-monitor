@@ -1,0 +1,21 @@
+{
+    auto_https off
+}
+
+:80 {
+    # API → backend
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy gps_backend:3000
+    }
+
+    # WebSocket → backend
+    handle /socket.io/* {
+        reverse_proxy gps_backend:3000
+    }
+
+    # Frontend → Angular
+    handle {
+        reverse_proxy gps_frontend:80
+    }
+}

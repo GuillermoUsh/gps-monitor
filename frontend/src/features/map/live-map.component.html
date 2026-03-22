@@ -1,0 +1,43 @@
+<div class="map-layout">
+
+  <p-toolbar class="map-toolbar">
+    <ng-template #start>
+      <p-button icon="pi pi-arrow-left" label="Volver" [text]="true" (onClick)="goBack()" />
+      <span class="ml-3 font-semibold">Mapa en vivo</span>
+    </ng-template>
+    <ng-template #end>
+      <span class="status-badge" [class.connected]="connectionStatus === 'connected'">
+        {{ connectionStatus }}
+      </span>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="map-body">
+    <div #mapContainer class="map-container"></div>
+
+    <aside class="side-panel">
+      <div class="panel-header">
+        <h3>Viajes activos</h3>
+      </div>
+
+      @for (entry of positionEntries(); track entry[0]) {
+        @let payload = $any(entry[1]);
+        <div class="trip-card" [class.deviation]="payload.isDeviation">
+          <div class="trip-id">{{ entry[0] | slice:0:8 }}...</div>
+          <div class="trip-km">{{ payload.distanceKm | number:'1.1-1' }} km</div>
+          <div class="trip-coords">
+            {{ payload.lat | number:'1.4-4' }}, {{ payload.lng | number:'1.4-4' }}
+          </div>
+          @if (payload.isDeviation) {
+            <div class="deviation-badge">⚠ Desvío {{ payload.deviationMeters | number:'1.0-0' }}m</div>
+          }
+        </div>
+      }
+
+      @if (positionEntries().length === 0) {
+        <p class="no-trips">Sin viajes activos</p>
+      }
+    </aside>
+  </div>
+
+</div>

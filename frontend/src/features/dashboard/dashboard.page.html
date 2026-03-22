@@ -1,0 +1,61 @@
+<div class="layout">
+
+  <p-toolbar>
+    <ng-template #start>
+      <span class="text-lg font-bold">🗺 GPS Monitor</span>
+    </ng-template>
+    <ng-template #end>
+      <span class="text-sm text-gray-500 mr-4">{{ user()?.email }}</span>
+      <p-button label="Salir" icon="pi pi-sign-out" severity="secondary"
+                [text]="true" (onClick)="logout()" />
+    </ng-template>
+  </p-toolbar>
+
+  <div class="content">
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-800">Bienvenido 👋</h2>
+      <p class="text-gray-500 mt-1">¿Qué querés hacer hoy?</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+
+      <div class="nav-card" routerLink="/map">
+        <div class="text-4xl mb-3">🗺</div>
+        <h3 class="text-lg font-semibold">Mapa en vivo</h3>
+        <p class="text-sm text-gray-500 mt-1">Seguí las unidades en tiempo real</p>
+      </div>
+
+      <div class="nav-card" routerLink="/trips">
+        <div class="text-4xl mb-3">🚌</div>
+        <h3 class="text-lg font-semibold">Viajes activos</h3>
+        <p class="text-sm text-gray-500 mt-1">Listado de viajes en curso</p>
+      </div>
+
+      <div class="nav-card" routerLink="/routes">
+        <div class="text-4xl mb-3">📍</div>
+        <h3 class="text-lg font-semibold">Rutas</h3>
+        <p class="text-sm text-gray-500 mt-1">Administrá las rutas y waypoints</p>
+      </div>
+
+      <div class="nav-card" routerLink="/simulator">
+        <div class="text-4xl mb-3">📡</div>
+        <h3 class="text-lg font-semibold">Simulador</h3>
+        <p class="text-sm text-gray-500 mt-1">Enviá posiciones GPS manualmente</p>
+      </div>
+
+      <div class="nav-card" routerLink="/users">
+        <div class="text-4xl mb-3">👥</div>
+        <h3 class="text-lg font-semibold">Usuarios / Choferes</h3>
+        <p class="text-sm text-gray-500 mt-1">Administrá usuarios y roles</p>
+      </div>
+
+      <div class="nav-card" routerLink="/driver">
+        <div class="text-4xl mb-3">🚗</div>
+        <h3 class="text-lg font-semibold">Vista del chofer</h3>
+        <p class="text-sm text-gray-500 mt-1">Panel móvil de seguimiento GPS</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>

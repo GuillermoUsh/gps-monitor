@@ -1,0 +1,114 @@
+<div class="users-layout">
+  <p-toast />
+
+  <p-toolbar>
+    <ng-template #start>
+      <span class="text-lg font-bold">Usuarios</span>
+    </ng-template>
+    <ng-template #end>
+      <p-button
+        label="Nuevo usuario"
+        icon="pi pi-plus"
+        (onClick)="openCreateDialog()"
+      />
+    </ng-template>
+  </p-toolbar>
+
+  <div class="mt-4">
+    <p-table
+      [value]="users()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="20"
+      emptyMessage="Sin usuarios"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Verificado</th>
+          <th>Creado</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-user>
+        <tr>
+          <td>{{ user.email }}</td>
+          <td>
+            <p-tag [value]="user.role" [severity]="getRoleSeverity(user.role)" />
+          </td>
+          <td>
+            @if (user.verified) {
+              <p-tag value="Sí" severity="success" />
+            } @else {
+              <p-tag value="No" severity="warn" />
+            }
+          </td>
+          <td>{{ user.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    header="Nuevo usuario"
+    [visible]="showCreateDialog()"
+    (visibleChange)="showCreateDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+    [draggable]="false"
+  >
+    <div class="dialog-body">
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          pInputText
+          type="email"
+          [(ngModel)]="formEmail"
+          placeholder="usuario@ejemplo.com"
+          [style]="{ width: '100%' }"
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          pInputText
+          type="password"
+          [(ngModel)]="formPassword"
+          placeholder="Mínimo 8 caracteres"
+          [style]="{ width: '100%' }"
+        />
+      </div>
+
+      <div class="field">
+        <label for="role">Rol</label>
+        <p-select
+          inputId="role"
+          [options]="roleOptions"
+          [(ngModel)]="formRole"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '100%' }"
+          appendTo="body"
+        />
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [text]="true"
+        (onClick)="showCreateDialog.set(false)"
+      />
+      <p-button
+        label="Crear"
+        icon="pi pi-check"
+        [loading]="saving()"
+        (onClick)="saveUser()"
+      />
+    </ng-template>
+  </p-dialog>
+</div>

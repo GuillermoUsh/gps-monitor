@@ -1,0 +1,41 @@
+<div class="login-wrapper">
+  <div class="login-box">
+
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">🗺</div>
+      <h1 class="text-2xl font-bold text-gray-800">GPS Monitor</h1>
+      <p class="text-gray-500 mt-1">Ingresá a tu cuenta</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+
+      <div class="flex flex-col gap-2">
+        <label for="email" class="font-semibold text-sm text-gray-700">Email</label>
+        <input pInputText id="email" type="email"
+               formControlName="email" placeholder="tu@email.com"
+               autocomplete="email" class="w-full" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="password" class="font-semibold text-sm text-gray-700">Contraseña</label>
+        <p-password inputId="password" formControlName="password"
+                    placeholder="••••••••" [feedback]="false" [toggleMask]="true"
+                    styleClass="w-full" inputStyleClass="w-full" />
+      </div>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full" />
+      }
+
+      <p-button type="submit" label="Ingresar" icon="pi pi-sign-in"
+                [loading]="loading()" [disabled]="form.invalid"
+                styleClass="w-full" />
+    </form>
+
+    <p class="text-center mt-6 text-sm text-gray-500">
+      ¿No tenés agencia?
+      <a routerLink="/register" class="text-indigo-600 font-semibold hover:underline">Registrala acá</a>
+    </p>
+
+  </div>
+</div>

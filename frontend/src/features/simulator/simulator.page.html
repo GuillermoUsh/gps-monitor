@@ -1,0 +1,121 @@
+<div class="simulator-layout">
+
+  <p-toast />
+
+  <p-toolbar styleClass="mb-4">
+    <ng-template #start>
+      <p-button
+        icon="pi pi-arrow-left"
+        [text]="true"
+        severity="secondary"
+        (onClick)="goBack()"
+        styleClass="mr-2"
+      />
+      <span class="text-xl font-bold">Simulador de posición</span>
+    </ng-template>
+    <ng-template #end>
+      @if (trip()) {
+        <p-tag
+          [value]="trip()!.status"
+          [severity]="getStatusSeverity(trip()!.status)"
+        />
+      }
+    </ng-template>
+  </p-toolbar>
+
+  <div class="simulator-content">
+
+    <!-- Trip info -->
+    @if (trip()) {
+      @let t = trip()!;
+      <p-card styleClass="mb-4">
+        <div class="trip-info">
+          <div class="info-item">
+            <span class="label">Viaje</span>
+            <span class="value font-mono">{{ t.id | slice:0:8 }}...</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Ruta</span>
+            <span class="value">{{ t.routeName ?? t.routeId }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Distancia</span>
+            <span class="value">{{ t.distanceKm | number:'1.1-1' }} km</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Inicio</span>
+            <span class="value">{{ t.startedAt | date:'dd/MM HH:mm' }}</span>
+          </div>
+        </div>
+      </p-card>
+    }
+
+    <div class="simulator-grid">
+
+      <!-- Map -->
+      <div class="map-wrapper">
+        <p class="map-hint">
+          <i class="pi pi-info-circle mr-1"></i>
+          Hacé clic en el mapa para seleccionar una posición
+        </p>
+        <div #mapContainer class="map-container"></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-panel">
+        <h3 class="text-lg font-semibold mb-4">Enviar posición</h3>
+
+        <div class="field">
+          <label>Latitud</label>
+          <p-inputNumber
+            [ngModel]="lat()"
+            (ngModelChange)="lat.set($event)"
+            [minFractionDigits]="4"
+            [maxFractionDigits]="7"
+            placeholder="-54.8000000"
+            styleClass="w-full"
+          />
+        </div>
+
+        <div class="field">
+          <label>Longitud</label>
+          <p-inputNumber
+            [ngModel]="lng()"
+            (ngModelChange)="lng.set($event)"
+            [minFractionDigits]="4"
+            [maxFractionDigits]="7"
+            placeholder="-68.3000000"
+            styleClass="w-full"
+          />
+        </div>
+
+        <div class="field">
+          <label>Velocidad (km/h)</label>
+          <p-inputNumber
+            [ngModel]="speed()"
+            (ngModelChange)="speed.set($event)"
+            [min]="0"
+            [max]="300"
+            placeholder="40"
+            styleClass="w-full"
+          />
+        </div>
+
+        <p-button
+          label="Enviar posición"
+          icon="pi pi-send"
+          styleClass="w-full mt-2"
+          [loading]="sending()"
+          (onClick)="sendPosition()"
+        />
+
+        <div class="coords-preview mt-4">
+          <span class="text-sm text-gray-500">Posición seleccionada:</span>
+          <span class="font-mono text-sm">{{ lat() | number:'1.4-7' }}, {{ lng() | number:'1.4-7' }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
