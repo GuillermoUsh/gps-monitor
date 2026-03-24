@@ -49,7 +49,7 @@ export const AgencyService = {
         { schema, agencyId: agency.id, slug: sanitizedSlug },
         async () => {
           try {
-            await AuthService.register(adminEmail, adminPassword);
+            await AuthService.createUser(adminEmail, adminPassword, 'admin');
             resolve();
           } catch (e) {
             reject(e);
