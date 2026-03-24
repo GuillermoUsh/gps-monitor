@@ -64,8 +64,23 @@ export class DriverPage implements OnInit, OnDestroy {
     });
   }
 
-  startTracking(tripId: string): void {
+  async startTracking(tripId: string): Promise<void> {
     this.error.set(null);
+
+    if (!navigator.geolocation) {
+      this.error.set('Este dispositivo no soporta GPS.');
+      return;
+    }
+
+    // Check permission state before calling watchPosition
+    if (navigator.permissions) {
+      const perm = await navigator.permissions.query({ name: 'geolocation' });
+      if (perm.state === 'denied') {
+        this.error.set('GPS bloqueado. Habilitá la ubicación en Ajustes del celular → Apps → Chrome → Permisos → Ubicación.');
+        return;
+      }
+    }
+
     this.activeTripId.set(tripId);
     this.tracking.set(true);
 
@@ -77,11 +92,11 @@ export class DriverPage implements OnInit, OnDestroy {
         this.sendPosition(tripId, coords);
       },
       (err) => {
-        this.error.set(`GPS no disponible: ${err.message}`);
+        this.error.set(`GPS no disponible: ${err.message}. Habilitá la ubicación en Ajustes del celular.`);
         this.tracking.set(false);
         this.activeTripId.set(null);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
   }
 
