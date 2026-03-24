@@ -37,7 +37,8 @@ export class LoginPage {
     try {
       const { email, password } = this.form.value;
       await this.authService.login(email!, password!);
-      await this.router.navigate(['/dashboard']);
+      const role = this.authService.currentUser()?.role;
+      await this.router.navigate([role === 'driver' ? '/driver' : '/dashboard']);
     } catch (err: unknown) {
       const message = (err as { error?: { message?: string } })?.error?.message;
       this.error.set(message ?? 'Error al iniciar sesión');
