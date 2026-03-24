@@ -15,7 +15,7 @@ export function createApp(): express.Application {
   const app = express();
 
   // Security & parsing
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
