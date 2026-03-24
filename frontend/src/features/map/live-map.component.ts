@@ -86,13 +86,6 @@ export class LiveMapComponent implements OnInit, OnDestroy {
   private async initMap(): Promise<void> {
     const L = await import('leaflet');
 
-    // Use divIcon as default to avoid missing asset issues in production
-    L.Marker.prototype.options.icon = L.divIcon({
-      className: 'marker-normal',
-      html: '<div style="width:12px;height:12px;border-radius:50%;background:#3b82f6;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>',
-      iconSize: [12, 12],
-      iconAnchor: [6, 6],
-    });
 
     this.map = L.map(this.mapContainer.nativeElement).setView([-54.8, -68.3], 13);
 
