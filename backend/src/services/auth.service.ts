@@ -296,11 +296,10 @@ export const AuthService = {
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await userRepository.createVerified({ email, passwordHash, role });
 
-    try {
-      await sendWelcomeEmail(email, password);
-    } catch (err) {
-      console.error('[mailer] Failed to send welcome email:', err);
-    }
+    // Fire-and-forget — don't block the HTTP response
+    sendWelcomeEmail(email, password).catch(err =>
+      console.error('[mailer] Failed to send welcome email:', err),
+    );
 
     return user;
   },
