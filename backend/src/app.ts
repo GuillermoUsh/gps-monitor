@@ -23,6 +23,7 @@ export function createApp(): express.Application {
         /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
         /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
         /^https:\/\/[a-z0-9-]+\.loca\.lt$/.test(origin) ||
+        /^https:\/\/[a-z0-9-]+\.up\.railway\.app$/.test(origin) ||
         origin === (process.env.CORS_ORIGIN ?? 'http://localhost:4200');
       callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
     },

@@ -36,6 +36,7 @@ export class SocketServer {
             /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
             /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
             /^https:\/\/[a-z0-9-]+\.loca\.lt$/.test(origin) ||
+            /^https:\/\/[a-z0-9-]+\.up\.railway\.app$/.test(origin) ||
             origin === options.corsOrigin;
           callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
         },
