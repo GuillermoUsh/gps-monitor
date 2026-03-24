@@ -35,6 +35,14 @@ router.get('/', authenticate, RouteController.list);
 
 router.get('/:id', authenticate, RouteController.getById);
 
+router.put(
+  '/:id',
+  validate(createRouteSchema),
+  authenticate,
+  requireRole([USER_ROLE.ADMIN]),
+  RouteController.update,
+);
+
 router.delete(
   '/:id',
   authenticate,

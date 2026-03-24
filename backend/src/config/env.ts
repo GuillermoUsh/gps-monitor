@@ -22,7 +22,13 @@ const envSchema = z.object({
   ETHEREAL_PASS: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().default('noreply@gpsmonitor.com'),
+
+  APP_URL: z.string().url().default('http://localhost:4200'),
+
+  CORS_ORIGIN: z.string().optional(),
 
   DEVIATION_THRESHOLD_METERS: z.coerce.number().positive().default(50),
   SOCKET_CORS_ORIGIN: z.string().url().default('http://localhost:4200'),

@@ -20,17 +20,17 @@ const loginSchema = z.object({
   }),
 });
 
-const resendSchema = z.object({
+const changePasswordSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    currentPassword: z.string().min(1),
+    newPassword:     z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres'),
   }),
 });
 
 router.post('/register', validate(registerSchema), AuthController.register);
-router.get('/verify-email', AuthController.verifyEmail);
-router.post('/resend-verification', validate(resendSchema), AuthController.resendVerification);
 router.post('/login', validate(loginSchema), AuthController.login);
 router.post('/refresh', AuthController.refresh);
 router.post('/logout', authenticate, AuthController.logout);
+router.post('/change-password', validate(changePasswordSchema), authenticate, AuthController.changePassword);
 
 export default router;

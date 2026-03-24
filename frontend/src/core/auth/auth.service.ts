@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { TenantService } from '../tenant/tenant.service';
+import { environment } from '../../environments/environment';
 
 export interface LoginResponse {
   status: string;
@@ -16,13 +16,13 @@ export interface AuthUser {
   id: string;
   email: string;
   role: string;
+  mustChangePassword?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly tenantService = inject(TenantService);
 
   private readonly _accessToken = signal<string | null>(null);
   private readonly _user = signal<AuthUser | null>(null);
@@ -32,7 +32,7 @@ export class AuthService {
   readonly accessToken = computed(() => this._accessToken());
 
   async login(email: string, password: string): Promise<void> {
-    const url = `${this.tenantService.getApiBase()}/auth/login`;
+    const url = `${environment.apiUrl}/auth/login`;
     const response = await firstValueFrom(
       this.http.post<LoginResponse>(url, { email, password }, { withCredentials: true })
     );
@@ -41,7 +41,7 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    const url = `${this.tenantService.getApiBase()}/auth/logout`;
+    const url = `${environment.apiUrl}/auth/logout`;
     try {
       await firstValueFrom(
         this.http.post(url, {}, { withCredentials: true })
@@ -54,7 +54,7 @@ export class AuthService {
   }
 
   async refresh(): Promise<boolean> {
-    const url = `${this.tenantService.getApiBase()}/auth/refresh`;
+    const url = `${environment.apiUrl}/auth/refresh`;
     try {
       const response = await firstValueFrom(
         this.http.post<{ status: string; data: { accessToken: string } }>(

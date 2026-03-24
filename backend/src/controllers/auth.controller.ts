@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
 import { AuthService } from '../services/auth.service';
+import { AuthRequest } from '../middleware/auth.middleware';
+import { UserRepository } from '../repositories/user.repository';
+import { ConflictError } from '../shared/errors/app.error';
 import { env } from '../config/env';
 
 const REFRESH_COOKIE = 'refreshToken';
@@ -10,35 +14,23 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 };
 
+const userRepository = new UserRepository();
+
 export const AuthController = {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
-      await AuthService.register(email, password);
+
+      const existing = await userRepository.findByEmail(email);
+      if (existing) throw new ConflictError('El email ya está registrado');
+
+      const passwordHash = await bcrypt.hash(password, 12);
+      await userRepository.createVerified({ email, passwordHash, role: 'admin' });
+
       res.status(201).json({
         status: 'success',
-        message: 'Cuenta creada. Verificá tu email para continuar.',
+        message: 'Cuenta creada correctamente.',
       });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async verifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { token } = req.query as { token: string };
-      await AuthService.verifyEmail(token);
-      res.json({ status: 'success', message: 'Email verificado correctamente.' });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async resendVerification(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { email } = req.body;
-      await AuthService.resendVerification(email);
-      res.json({ status: 'success', message: 'Email de verificación reenviado.' });
     } catch (err) {
       next(err);
     }
@@ -71,6 +63,16 @@ export const AuthController = {
       const result = await AuthService.refresh(refreshToken);
       res.cookie(REFRESH_COOKIE, result.newRefreshToken, COOKIE_OPTIONS);
       res.json({ status: 'success', data: { accessToken: result.accessToken } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async changePassword(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      await AuthService.changePassword(req.user!.sub, currentPassword, newPassword);
+      res.json({ status: 'success', message: 'Contraseña actualizada.' });
     } catch (err) {
       next(err);
     }

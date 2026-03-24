@@ -22,6 +22,10 @@ export class RouteWaypointRepository extends BaseRepository {
     );
   }
 
+  async deleteByRouteId(routeId: string): Promise<void> {
+    await this.query(`DELETE FROM route_waypoints WHERE route_id = $1`, [routeId]);
+  }
+
   async findByRouteId(routeId: string): Promise<RouteWaypointRow[]> {
     return this.query<RouteWaypointRow>(
       `SELECT id, route_id, lat, lng, "order" FROM route_waypoints

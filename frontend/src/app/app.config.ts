@@ -8,7 +8,6 @@ import { isDevMode } from '@angular/core';
 import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { authInterceptor } from '../core/auth/auth.interceptor';
-import { tenantInterceptor } from '../core/tenant/tenant.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, tenantInterceptor]),
+      withInterceptors([authInterceptor]),
     ),
     provideAnimationsAsync(),
     providePrimeNG({

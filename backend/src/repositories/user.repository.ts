@@ -79,6 +79,23 @@ export class UserRepository extends BaseRepository {
     return rows[0];
   }
 
+  async createVerifiedWithTempPassword(data: { email: string; passwordHash: string }): Promise<{ id: string; email: string }> {
+    const rows = await this.query<{ id: string; email: string }>(
+      `INSERT INTO users (email, password_hash, role, verified, must_change_password)
+       VALUES ($1, $2, 'admin', TRUE, TRUE)
+       RETURNING id, email`,
+      [data.email, data.passwordHash],
+    );
+    return rows[0];
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await this.query(
+      `UPDATE users SET password_hash = $2, must_change_password = FALSE, updated_at = NOW() WHERE id = $1`,
+      [userId, passwordHash],
+    );
+  }
+
   async findAll(): Promise<UserRow[]> {
     return this.query<UserRow>(
       'SELECT id, email, role, verified, created_at FROM users ORDER BY created_at DESC',

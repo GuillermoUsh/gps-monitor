@@ -14,9 +14,6 @@ const mockFindByTokenHash = jest.fn();
 const mockMarkUsed = jest.fn();
 const mockInvalidateFamily = jest.fn();
 
-const mockGetTenantContextFn = jest.fn();
-const mockTenantStorageRun = jest.fn();
-
 // ===== MODULE MOCKS =====
 jest.mock('../repositories/user.repository', () => ({
   UserRepository: jest.fn().mockImplementation(() => ({
@@ -36,14 +33,6 @@ jest.mock('../repositories/refresh-token.repository', () => ({
     markUsed: mockMarkUsed,
     invalidateFamily: mockInvalidateFamily,
   })),
-}));
-
-jest.mock('../tenant/tenant.context', () => ({
-  getTenantContext: mockGetTenantContextFn,
-  tenantStorage: {
-    run: mockTenantStorageRun,
-    getStore: jest.fn(),
-  },
 }));
 
 import { AuthService } from './auth.service';
@@ -69,6 +58,7 @@ async function makeUserRow(overrides: Partial<UserRow> = {}): Promise<UserRow> {
     password_hash: await bcrypt.hash('password123', 10),
     role: 'admin',
     verified: true,
+    must_change_password: false,
     verification_token: null,
     verification_token_expires: null,
     created_at: new Date(),
@@ -80,11 +70,6 @@ async function makeUserRow(overrides: Partial<UserRow> = {}): Promise<UserRow> {
 describe('AuthService.login', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetTenantContextFn.mockReturnValue({
-      schema: 'agency_test',
-      agencyId: 'agency-uuid',
-      slug: 'test',
-    });
   });
 
   it('lanza UnauthorizedError cuando el usuario no existe', async () => {
@@ -120,7 +105,6 @@ describe('AuthService.login', () => {
       id: 'rt-uuid',
       token_hash: 'hash',
       user_id: user.id,
-      tenant_schema: 'agency_test',
       family: 'family-uuid',
       expires_at: new Date(),
       used: false,
@@ -136,7 +120,6 @@ describe('AuthService.login', () => {
     const decoded = jwt.decode(result.accessToken) as Record<string, unknown>;
     expect(decoded.sub).toBe(user.id);
     expect(decoded.email).toBe(user.email);
-    expect(decoded.tenantSchema).toBe('agency_test');
   });
 });
 
@@ -147,7 +130,7 @@ describe('AuthService.refresh', () => {
 
   it('lanza UnauthorizedError si el refresh token ya fue usado (detección de reuso)', async () => {
     const refreshToken = jwt.sign(
-      { sub: 'user-id', family: 'family-uuid', tenantSchema: 'agency_test' },
+      { sub: 'user-id', family: 'family-uuid' },
       process.env.REFRESH_TOKEN_SECRET!,
       { expiresIn: '7d' },
     );
@@ -159,10 +142,9 @@ describe('AuthService.refresh', () => {
       id: 'rt-uuid',
       token_hash: tokenHash,
       user_id: 'user-uuid',
-      tenant_schema: 'agency_test',
       family: 'family-uuid',
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      used: true, // ← ya fue usado
+      used: true, // ya fue usado
       created_at: new Date(),
     });
     mockInvalidateFamily.mockResolvedValue(undefined);

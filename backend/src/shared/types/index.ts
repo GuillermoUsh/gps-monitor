@@ -10,21 +10,12 @@ export const USER_ROLE = {
 
 export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 
-export const AGENCY_STATUS = {
-  PENDING: 'pending',
-  ACTIVE: 'active',
-  SUSPENDED: 'suspended',
-} as const;
-
-export type AgencyStatus = (typeof AGENCY_STATUS)[keyof typeof AGENCY_STATUS];
-
 // ── JWT ──────────────────────────────────────────────────────────────────────
 
 export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
-  tenantSchema: string;
   iat?: number;
   exp?: number;
 }
@@ -32,28 +23,11 @@ export interface JwtPayload {
 export interface RefreshTokenPayload {
   sub: string;
   family: string;
-  tenantSchema: string;
   iat?: number;
   exp?: number;
 }
 
-// ── Tenant ───────────────────────────────────────────────────────────────────
-
-export interface TenantContext {
-  schema: string;
-  agencyId: string;
-  slug: string;
-}
-
 // ── DB Row types ─────────────────────────────────────────────────────────────
-
-export interface AgencyRow {
-  id: string;
-  name: string;
-  slug: string;
-  status: AgencyStatus;
-  created_at: Date;
-}
 
 export interface UserRow {
   id: string;
@@ -61,6 +35,7 @@ export interface UserRow {
   password_hash: string;
   role: UserRole;
   verified: boolean;
+  must_change_password: boolean;
   verification_token: string | null;
   verification_token_expires: Date | null;
   created_at: Date;
@@ -71,7 +46,6 @@ export interface RefreshTokenRow {
   id: string;
   token_hash: string;
   user_id: string;
-  tenant_schema: string;
   family: string;
   expires_at: Date;
   used: boolean;
@@ -209,8 +183,6 @@ export interface PositionUpdatePayload {
 }
 
 export interface SocketData {
-  userId:       string;
-  tenantSchema: string;
-  slug:         string;
-  role:         UserRole;
+  userId: string;
+  role:   UserRole;
 }

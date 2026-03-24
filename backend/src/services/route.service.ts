@@ -49,6 +49,38 @@ export const RouteService = {
     };
   },
 
+  async updateRoute(id: string, input: CreateRouteInput): Promise<RouteDto> {
+    if (!input.waypoints || input.waypoints.length < 2) {
+      throw new ValidationError('Una ruta debe tener al menos 2 waypoints');
+    }
+    const existing = await routeRepository.findById(id);
+    if (!existing) throw new NotFoundError('Ruta no encontrada');
+
+    // Check name conflict only if name changed
+    if (existing.name !== input.name && await routeRepository.nameExists(input.name)) {
+      throw new ConflictError(`Ya existe una ruta con el nombre "${input.name}"`);
+    }
+
+    const updated = await routeRepository.update(id, {
+      name: input.name,
+      origin: input.origin,
+      destination: input.destination,
+    });
+
+    await waypointRepository.deleteByRouteId(id);
+    await waypointRepository.createMany(id, input.waypoints);
+
+    return {
+      id:            updated.id,
+      name:          updated.name,
+      origin:        updated.origin,
+      destination:   updated.destination,
+      status:        updated.status,
+      waypointCount: input.waypoints.length,
+      waypoints:     input.waypoints,
+    };
+  },
+
   async deleteRoute(id: string): Promise<void> {
     if (await routeRepository.hasActiveTrips(id)) {
       throw new ConflictError('No se puede eliminar una ruta con viajes activos');

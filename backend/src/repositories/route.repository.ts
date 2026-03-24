@@ -69,6 +69,16 @@ export class RouteRepository extends BaseRepository {
     return { ...routes[0], waypoints };
   }
 
+  async update(id: string, input: { name: string; origin: string; destination: string }): Promise<RouteRow> {
+    const rows = await this.query<RouteRow>(
+      `UPDATE routes SET name = $2, origin = $3, destination = $4, updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, name, origin, destination, status, created_at, updated_at`,
+      [id, input.name, input.origin, input.destination],
+    );
+    return rows[0];
+  }
+
   async delete(id: string): Promise<void> {
     await this.query('DELETE FROM routes WHERE id = $1', [id]);
   }

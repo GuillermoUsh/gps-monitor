@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { TenantService } from '../../../core/tenant/tenant.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-verify-email-page',
@@ -33,7 +33,6 @@ import { TenantService } from '../../../core/tenant/tenant.service';
 export class VerifyEmailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
-  private readonly tenantService = inject(TenantService);
 
   readonly loading = signal(true);
   readonly verified = signal(false);
@@ -48,7 +47,7 @@ export class VerifyEmailPage implements OnInit {
     }
 
     try {
-      const url = `${this.tenantService.getApiBase()}/auth/verify-email?token=${token}`;
+      const url = `${environment.apiUrl}/auth/verify-email?token=${token}`;
       await firstValueFrom(this.http.get(url, { withCredentials: true }));
       this.verified.set(true);
     } catch (err: unknown) {

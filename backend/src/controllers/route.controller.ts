@@ -29,6 +29,15 @@ export const RouteController = {
     }
   },
 
+  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const route = await RouteService.updateRoute(req.params.id, req.body);
+      res.json({ status: 'success', data: route });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await RouteService.deleteRoute(req.params.id);

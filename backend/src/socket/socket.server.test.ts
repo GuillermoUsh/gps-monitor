@@ -17,8 +17,8 @@ import { SOCKET_EVENTS } from './socket.events';
 
 const JWT_SECRET = 'test-jwt-secret-must-be-at-least-32-chars';
 
-function makeToken(tenantSchema: string, sub = 'user-1', role = 'driver'): string {
-  return jwt.sign({ sub, tenantSchema, role }, JWT_SECRET, { expiresIn: '1h' });
+function makeToken(sub = 'user-1', role = 'driver'): string {
+  return jwt.sign({ sub, role }, JWT_SECRET, { expiresIn: '1h' });
 }
 
 function waitFor(emitter: ClientSocket, event: string, timeout = 2000): Promise<unknown> {
@@ -61,15 +61,12 @@ describe('SocketServer', () => {
   });
 
   afterAll(done => {
-    // Disconnect all clients
     clients.forEach(c => c.disconnect());
     httpServer.close(done);
-    // Reset singleton for other test files
     (SocketServer as unknown as { instance: null }).instance = null;
   });
 
   afterEach(() => {
-    // Disconnect clients created in each test
     clients.forEach(c => c.disconnect());
     clients.length = 0;
   });
@@ -94,7 +91,7 @@ describe('SocketServer', () => {
     });
 
     it('acepta conexión con token válido', done => {
-      const token = makeToken('agency_rimatur');
+      const token = makeToken();
       const client = createClient({ token });
 
       client.on('connect', () => {
@@ -106,38 +103,9 @@ describe('SocketServer', () => {
     });
   });
 
-  describe('join:agency', () => {
-    it('ignora join:agency si el slug no coincide con el token', done => {
-      const token = makeToken('agency_rimatur');
-      const client = createClient({ token });
-
-      client.on('connect', () => {
-        // Join con slug diferente al del token
-        client.emit(SOCKET_EVENTS.JOIN_AGENCY, 'patagonia');
-
-        // Enviar un update: el cliente NO debería recibirlo
-        setTimeout(() => {
-          const socketServer = SocketServer.getInstance()!;
-          let received = false;
-
-          client.on(SOCKET_EVENTS.POSITION_UPDATE, () => { received = true; });
-          socketServer.emitPositionUpdate('patagonia', {
-            tripId: 't1', routeId: 'r1', driverId: 'd1',
-            lat: -34.6, lng: -58.38, speed: null,
-            isDeviation: false, deviationMeters: null,
-            distanceKm: 0, recordedAt: new Date().toISOString(),
-          });
-
-          setTimeout(() => {
-            expect(received).toBe(false);
-            done();
-          }, 200);
-        }, 100);
-      });
-    });
-
-    it('recibe position:update tras join:agency correcto', async () => {
-      const token = makeToken('agency_rimatur');
+  describe('position:update', () => {
+    it('recibe position:update tras conectarse', async () => {
+      const token = makeToken();
       const client = createClient({ token });
 
       await new Promise<void>((resolve, reject) => {
@@ -145,9 +113,7 @@ describe('SocketServer', () => {
         client.on('connect_error', reject);
       });
 
-      client.emit(SOCKET_EVENTS.JOIN_AGENCY, 'rimatur');
-
-      // Pequeña espera para que el join se procese
+      // Pequeña espera para que el join automático se procese
       await new Promise(r => setTimeout(r, 100));
 
       const socketServer = SocketServer.getInstance()!;
@@ -159,42 +125,41 @@ describe('SocketServer', () => {
       };
 
       const received = waitFor(client, SOCKET_EVENTS.POSITION_UPDATE);
-      socketServer.emitPositionUpdate('rimatur', payload);
+      socketServer.emitPositionUpdate(payload);
 
       const data = await received;
       expect(data).toMatchObject({ tripId: 'trip-1', lat: -34.608 });
     });
 
-    it('aislamiento de tenants: rimatur no recibe eventos de patagonia', async () => {
-      const tokenRimatur = makeToken('agency_rimatur');
-      const tokenPatagonia = makeToken('agency_patagonia', 'user-2');
+    it('todos los clientes conectados reciben el update', async () => {
+      const token1 = makeToken('user-1');
+      const token2 = makeToken('user-2');
 
-      const clientRimatur = createClient({ token: tokenRimatur });
-      const clientPatagonia = createClient({ token: tokenPatagonia });
+      const client1 = createClient({ token: token1 });
+      const client2 = createClient({ token: token2 });
 
       await Promise.all([
-        new Promise<void>(r => clientRimatur.on('connect', r)),
-        new Promise<void>(r => clientPatagonia.on('connect', r)),
+        new Promise<void>(r => client1.on('connect', r)),
+        new Promise<void>(r => client2.on('connect', r)),
       ]);
-
-      clientRimatur.emit(SOCKET_EVENTS.JOIN_AGENCY, 'rimatur');
-      clientPatagonia.emit(SOCKET_EVENTS.JOIN_AGENCY, 'patagonia');
 
       await new Promise(r => setTimeout(r, 100));
 
       const socketServer = SocketServer.getInstance()!;
-      let rimaturReceived = false;
-      clientRimatur.on(SOCKET_EVENTS.POSITION_UPDATE, () => { rimaturReceived = true; });
-
-      socketServer.emitPositionUpdate('patagonia', {
+      const payload = {
         tripId: 't2', routeId: 'r2', driverId: 'd2',
         lat: -41.1, lng: -71.3, speed: 80,
         isDeviation: false, deviationMeters: null,
         distanceKm: 5, recordedAt: new Date().toISOString(),
-      });
+      };
 
-      await new Promise(r => setTimeout(r, 200));
-      expect(rimaturReceived).toBe(false);
+      const p1 = waitFor(client1, SOCKET_EVENTS.POSITION_UPDATE);
+      const p2 = waitFor(client2, SOCKET_EVENTS.POSITION_UPDATE);
+      socketServer.emitPositionUpdate(payload);
+
+      const [data1, data2] = await Promise.all([p1, p2]);
+      expect(data1).toMatchObject({ tripId: 't2' });
+      expect(data2).toMatchObject({ tripId: 't2' });
     });
   });
 });

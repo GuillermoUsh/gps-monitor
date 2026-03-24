@@ -2,7 +2,7 @@ import 'dotenv/config';
 import http from 'http';
 import { env } from './config/env';
 import { createApp } from './app';
-import { runSharedMigrations } from './db/migrate';
+import { runMigrations } from './db/migrate';
 import { closeDatabase } from './config/database';
 import { closeRedis } from './config/redis';
 import { SocketServer } from './socket/socket.server';
@@ -10,7 +10,7 @@ import { SocketServer } from './socket/socket.server';
 async function bootstrap(): Promise<void> {
   console.log('[boot] Starting GPS Monitor backend...');
 
-  await runSharedMigrations();
+  await runMigrations();
   console.log('[boot] Migrations complete');
 
   const app = createApp();

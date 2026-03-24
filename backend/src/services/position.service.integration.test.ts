@@ -1,5 +1,5 @@
 /**
- * Integration test: position.service.ts con PostgreSQL real y PostGIS.
+ * Integration test: position.service.ts con PostgreSQL real.
  * Requiere `RUN_INTEGRATION=true` para ejecutarse.
  */
 
@@ -16,18 +16,12 @@ jest.mock('../socket/socket.server', () => ({
 }));
 
 import { pool } from '../config/database';
-import { runTenantMigrations } from '../db/migrate';
-import { tenantStorage } from '../tenant/tenant.context';
+import { runMigrations } from '../db/migrate';
 import { RouteRepository } from '../repositories/route.repository';
 import { RouteWaypointRepository } from '../repositories/route-waypoint.repository';
 import { TripRepository } from '../repositories/trip.repository';
 import { TripPositionRepository } from '../repositories/trip-position.repository';
 import { PositionService } from './position.service';
-
-// Unique schema per test run to avoid collisions
-const SCHEMA = `agency_test_pos_${Date.now()}`;
-const AGENCY_ID = 'test-agency-pos-id';
-const SLUG = `test-pos-${Date.now()}`;
 
 // Route waypoints forming a roughly straight line near Buenos Aires
 const WAYPOINTS = [
@@ -46,35 +40,36 @@ let routeId: string;
 let tripId: string;
 const DRIVER_ID = '00000000-0000-0000-0000-000000000001';
 
-async function setupSchema(): Promise<void> {
+async function seedRouteAndTrip(): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query(`DROP SCHEMA IF EXISTS ${SCHEMA} CASCADE`);
+    // Insert driver user to satisfy FK
+    await client.query(
+      `INSERT INTO users (id, email, password_hash, role, verified)
+       VALUES ($1, $2, 'hash', 'driver', TRUE)
+       ON CONFLICT (id) DO NOTHING`,
+      [DRIVER_ID, `driver-pos-int@test.com`],
+    );
   } finally {
     client.release();
   }
-  await runTenantMigrations(SCHEMA);
-}
 
-async function teardownSchema(): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query(`DROP SCHEMA IF EXISTS ${SCHEMA} CASCADE`);
-  } finally {
-    client.release();
-  }
-}
+  const routeRepo = new RouteRepository();
+  const waypointRepo = new RouteWaypointRepository();
+  const tripRepo = new TripRepository();
 
-function withTenant<T>(fn: () => Promise<T>): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    tenantStorage.run({ schema: SCHEMA, agencyId: AGENCY_ID, slug: SLUG }, async () => {
-      try {
-        resolve(await fn());
-      } catch (e) {
-        reject(e);
-      }
-    });
+  const route = await routeRepo.create({
+    name: `Ruta Test Integración ${Date.now()}`,
+    origin: 'Origen',
+    destination: 'Destino',
+    waypoints: WAYPOINTS,
   });
+  routeId = route.id;
+
+  await waypointRepo.createMany(routeId, WAYPOINTS);
+
+  const trip = await tripRepo.create({ routeId, driverId: DRIVER_ID });
+  tripId = trip.id;
 }
 
 function makestamp(offsetMs = 0): string {
@@ -83,42 +78,26 @@ function makestamp(offsetMs = 0): string {
 
 describeIntegration('PositionService integration', () => {
   beforeAll(async () => {
-    await setupSchema();
-
-    await withTenant(async () => {
-      // Insert a fake driver user so FK constraints are satisfied (if any)
-      // The trips table has driver_id UUID NOT NULL but no FK to users — safe to skip
-      const routeRepo = new RouteRepository();
-      const waypointRepo = new RouteWaypointRepository();
-      const tripRepo = new TripRepository();
-
-      const route = await routeRepo.create({
-        name: 'Ruta Test Integración',
-        origin: 'Origen',
-        destination: 'Destino',
-        waypoints: WAYPOINTS,
-      });
-      routeId = route.id;
-
-      await waypointRepo.createMany(routeId, WAYPOINTS);
-
-      const trip = await tripRepo.create({ routeId, driverId: DRIVER_ID });
-      tripId = trip.id;
-    });
+    await runMigrations();
+    await seedRouteAndTrip();
   }, 30_000);
 
   afterAll(async () => {
-    await teardownSchema();
+    // cleanup test user
+    const client = await pool.connect();
+    try {
+      await client.query('DELETE FROM users WHERE id = $1', [DRIVER_ID]);
+    } finally {
+      client.release();
+    }
   }, 15_000);
 
   it('ingest primera posición → distance_km stays 0, position saved, is_deviation false', async () => {
-    const result = await withTenant(() =>
-      PositionService.ingest(tripId, DRIVER_ID, {
-        lat: WAYPOINTS[0].lat,
-        lng: WAYPOINTS[0].lng,
-        timestamp: makestamp(),
-      }),
-    );
+    const result = await PositionService.ingest(tripId, DRIVER_ID, {
+      lat: WAYPOINTS[0].lat,
+      lng: WAYPOINTS[0].lng,
+      timestamp: makestamp(),
+    });
 
     expect(result.distanceKm).toBe(0);
     expect(result.isDeviation).toBe(false);
@@ -127,77 +106,61 @@ describeIntegration('PositionService integration', () => {
     expect(result.lng).toBe(WAYPOINTS[0].lng);
   });
 
-  it('ingest segunda posición a ~1km → distance_km increases by ~1 (±0.2 km)', async () => {
-    // Ingest first position (already done above but we need to re-ingest to build the prev pointer)
-    // The previous test ingested pos[0]. Now ingest pos[1] which is ~2km away.
-    // We use waypoints[1] which is ~2.5km from waypoints[0] by straight line.
-    const before = await withTenant(() =>
-      new TripRepository().findById(tripId),
-    );
+  it('ingest segunda posición a ~2.5km → distance_km increases', async () => {
+    const before = await new TripRepository().findById(tripId);
     const distanceBefore = before!.distance_km;
 
-    const result = await withTenant(() =>
-      PositionService.ingest(tripId, DRIVER_ID, {
-        lat: WAYPOINTS[1].lat,
-        lng: WAYPOINTS[1].lng,
-        timestamp: makestamp(1000),
-      }),
-    );
+    const result = await PositionService.ingest(tripId, DRIVER_ID, {
+      lat: WAYPOINTS[1].lat,
+      lng: WAYPOINTS[1].lng,
+      timestamp: makestamp(1000),
+    });
 
     const delta = result.distanceKm - distanceBefore;
-    // waypoints[0] to waypoints[1] is roughly 2.5km — just verify it's > 0
     expect(delta).toBeGreaterThan(0);
     expect(result.isDeviation).toBe(false);
   });
 
   it('ingest posición a >50m de la ruta → is_deviation: true', async () => {
-    const result = await withTenant(() =>
-      PositionService.ingest(tripId, DRIVER_ID, {
-        lat: POS_FAR_FROM_ROUTE.lat,
-        lng: POS_FAR_FROM_ROUTE.lng,
-        timestamp: makestamp(2000),
-      }),
-    );
+    const result = await PositionService.ingest(tripId, DRIVER_ID, {
+      lat: POS_FAR_FROM_ROUTE.lat,
+      lng: POS_FAR_FROM_ROUTE.lng,
+      timestamp: makestamp(2000),
+    });
 
     expect(result.isDeviation).toBe(true);
     expect(result.deviationMeters).toBeGreaterThan(50);
   });
 
   it('ingest posición a <50m de la ruta → is_deviation: false', async () => {
-    const result = await withTenant(() =>
-      PositionService.ingest(tripId, DRIVER_ID, {
-        lat: POS_ON_ROUTE.lat,
-        lng: POS_ON_ROUTE.lng,
-        timestamp: makestamp(3000),
-      }),
-    );
+    const result = await PositionService.ingest(tripId, DRIVER_ID, {
+      lat: POS_ON_ROUTE.lat,
+      lng: POS_ON_ROUTE.lng,
+      timestamp: makestamp(3000),
+    });
 
     expect(result.isDeviation).toBe(false);
   });
 
   it('rollback en fallo → distance_km no cambia', async () => {
-    const tripBefore = await withTenant(() => new TripRepository().findById(tripId));
+    const tripBefore = await new TripRepository().findById(tripId);
     const distanceBefore = tripBefore!.distance_km;
 
-    // Spy on the prototype so the module-level instance inside PositionService is affected
     const spy = jest
       .spyOn(TripPositionRepository.prototype, 'updateDeviation')
       .mockRejectedValueOnce(new Error('Simulated failure for rollback test'));
 
     await expect(
-      withTenant(() =>
-        PositionService.ingest(tripId, DRIVER_ID, {
-          lat: WAYPOINTS[2].lat,
-          lng: WAYPOINTS[2].lng,
-          timestamp: makestamp(4000),
-        }),
-      ),
+      PositionService.ingest(tripId, DRIVER_ID, {
+        lat: WAYPOINTS[2].lat,
+        lng: WAYPOINTS[2].lng,
+        timestamp: makestamp(4000),
+      }),
     ).rejects.toThrow('Simulated failure for rollback test');
 
     spy.mockRestore();
 
-    // Verify distance_km didn't change (transaction was rolled back)
-    const tripAfter = await withTenant(() => new TripRepository().findById(tripId));
+    const tripAfter = await new TripRepository().findById(tripId);
     expect(tripAfter!.distance_km).toBe(distanceBefore);
   });
 });

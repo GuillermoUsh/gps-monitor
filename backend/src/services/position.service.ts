@@ -1,6 +1,5 @@
 import { pool } from '../config/database';
 import { env } from '../config/env';
-import { getTenantContext } from '../tenant/tenant.context';
 import { TripRepository } from '../repositories/trip.repository';
 import { TripPositionRepository } from '../repositories/trip-position.repository';
 import { RouteWaypointRepository } from '../repositories/route-waypoint.repository';
@@ -39,7 +38,6 @@ export const PositionService = {
     input: IngestPositionInput,
   ): Promise<PositionDto> {
     const { lat, lng, speed, timestamp } = input;
-    const { slug } = getTenantContext();
 
     const trip = await tripRepository.findById(tripId);
     if (!trip) throw new NotFoundError('Viaje no encontrado');
@@ -114,7 +112,7 @@ export const PositionService = {
 
     try {
       const { SocketServer } = await import('../socket/socket.server');
-      SocketServer.getInstance()?.emitPositionUpdate(slug, payload);
+      SocketServer.getInstance()?.emitPositionUpdate(payload);
     } catch {
       // Socket not initialized in test environment — ignore
     }

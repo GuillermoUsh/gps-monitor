@@ -12,7 +12,6 @@ import {
   ValidationError,
 } from '../shared/errors/app.error';
 import { JwtPayload, RefreshTokenPayload, UserRole } from '../shared/types';
-import { getTenantContext, tenantStorage } from '../tenant/tenant.context';
 
 const userRepository = new UserRepository();
 const refreshTokenRepository = new RefreshTokenRepository();
@@ -22,22 +21,20 @@ let mailerTransport: nodemailer.Transporter | null = null;
 async function getMailer(): Promise<nodemailer.Transporter> {
   if (mailerTransport) return mailerTransport;
 
-  if (env.ETHEREAL_USER && env.ETHEREAL_PASS) {
+  if (env.SMTP_USER && env.SMTP_PASS) {
+    mailerTransport = nodemailer.createTransport({
+      host: env.SMTP_HOST ?? 'smtp.gmail.com',
+      port: env.SMTP_PORT ?? 587,
+      secure: false,
+      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+    });
+  } else if (env.ETHEREAL_USER && env.ETHEREAL_PASS) {
     mailerTransport = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       auth: { user: env.ETHEREAL_USER, pass: env.ETHEREAL_PASS },
     });
-  } else if (env.SMTP_HOST) {
-    mailerTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT ?? 587,
-      auth: env.ETHEREAL_USER
-        ? { user: env.ETHEREAL_USER, pass: env.ETHEREAL_PASS }
-        : undefined,
-    });
   } else {
-    // Auto-generate Ethereal account for development
     const testAccount = await nodemailer.createTestAccount();
     mailerTransport = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -45,7 +42,6 @@ async function getMailer(): Promise<nodemailer.Transporter> {
       auth: { user: testAccount.user, pass: testAccount.pass },
     });
     console.log('[mailer] Ethereal test account:', testAccount.user);
-    console.log('[mailer] Preview URL will appear after each email send');
   }
 
   return mailerTransport;
@@ -53,9 +49,9 @@ async function getMailer(): Promise<nodemailer.Transporter> {
 
 async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const mailer = await getMailer();
-  const verifyUrl = `http://localhost:4200/verify-email?token=${token}`;
+  const verifyUrl = `${env.APP_URL}/verify-email?token=${token}`;
 
-  const info = await mailer.sendMail({
+  await mailer.sendMail({
     from: env.SMTP_FROM,
     to: email,
     subject: 'Verificá tu cuenta — GPS Monitor',
@@ -66,15 +62,32 @@ async function sendVerificationEmail(email: string, token: string): Promise<void
       <p>Este enlace expira en 24 horas.</p>
     `,
   });
+}
 
-  if (env.NODE_ENV === 'development') {
-    console.log('[mailer] Preview URL:', nodemailer.getTestMessageUrl(info));
-  }
+async function sendWelcomeEmail(email: string, password: string): Promise<void> {
+  const mailer = await getMailer();
+  const loginUrl = `${env.APP_URL}/login`;
+
+  await mailer.sendMail({
+    from: env.SMTP_FROM,
+    to: email,
+    subject: 'Tu cuenta en GPS Monitor',
+    html: `
+      <h2>Bienvenido a GPS Monitor</h2>
+      <p>Un administrador creó tu cuenta. Tus credenciales de acceso son:</p>
+      <ul>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Contraseña temporal:</strong> ${password}</li>
+      </ul>
+      <p>Al ingresar por primera vez, el sistema te pedirá que cambies tu contraseña.</p>
+      <p><a href="${loginUrl}">Ingresar a GPS Monitor</a></p>
+    `,
+  });
 }
 
 function generateVerificationToken(): { token: string; expires: Date } {
   const token = crypto.randomBytes(32).toString('hex');
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   return { token, expires };
 }
 
@@ -131,11 +144,7 @@ export const AuthService = {
 
   async resendVerification(email: string): Promise<void> {
     const user = await userRepository.findByEmail(email);
-    if (!user) {
-      // Don't reveal if email exists
-      return;
-    }
-    if (user.verified) {
+    if (!user || user.verified) {
       return;
     }
 
@@ -147,7 +156,7 @@ export const AuthService = {
   async login(
     email: string,
     password: string,
-  ): Promise<{ accessToken: string; refreshToken: string; user: { id: string; email: string; role: UserRole } }> {
+  ): Promise<{ accessToken: string; refreshToken: string; user: { id: string; email: string; role: UserRole; mustChangePassword: boolean } }> {
     const user = await userRepository.findByEmail(email);
 
     if (!user) {
@@ -163,21 +172,16 @@ export const AuthService = {
       throw new UnauthorizedError('Credenciales inválidas');
     }
 
-    // Get tenant context from AsyncLocalStorage (already set by middleware)
-    const context = getTenantContext();
-
     const accessToken = generateAccessToken({
       sub: user.id,
       email: user.email,
       role: user.role,
-      tenantSchema: context.schema,
     });
 
     const family = crypto.randomUUID();
     const refreshToken = generateRefreshToken({
       sub: user.id,
       family,
-      tenantSchema: context.schema,
     });
 
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
@@ -186,7 +190,6 @@ export const AuthService = {
     await refreshTokenRepository.save({
       tokenHash,
       userId: user.id,
-      tenantSchema: context.schema,
       family,
       expiresAt,
     });
@@ -194,7 +197,12 @@ export const AuthService = {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        mustChangePassword: user.must_change_password,
+      },
     };
   },
 
@@ -216,40 +224,21 @@ export const AuthService = {
     }
 
     if (stored.used) {
-      // Token reuse detected — invalidate entire family
       await refreshTokenRepository.invalidateFamily(stored.family);
       throw new UnauthorizedError('Refresh token ya fue utilizado. Iniciá sesión nuevamente');
     }
 
-    // Get user from the tenant schema stored in the token
-    const userRepo = new UserRepository();
+    const user = await userRepository.findById(stored.user_id);
 
-    let user: Awaited<ReturnType<typeof userRepo.findById>>;
-    await new Promise<void>((resolve, reject) => {
-      tenantStorage.run(
-        { schema: stored.tenant_schema, agencyId: '', slug: '' },
-        async () => {
-          try {
-            user = await userRepo.findById(stored.user_id);
-            resolve();
-          } catch (e) {
-            reject(e);
-          }
-        },
-      );
-    });
-
-    if (!user!) {
+    if (!user) {
       throw new UnauthorizedError('Usuario no encontrado');
     }
 
-    // Rotate: mark old as used, issue new
     await refreshTokenRepository.markUsed(stored.id);
 
     const newRefreshToken = generateRefreshToken({
       sub: user.id,
       family: stored.family,
-      tenantSchema: stored.tenant_schema,
     });
 
     const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
@@ -258,7 +247,6 @@ export const AuthService = {
     await refreshTokenRepository.save({
       tokenHash: newHash,
       userId: user.id,
-      tenantSchema: stored.tenant_schema,
       family: stored.family,
       expiresAt,
     });
@@ -267,7 +255,6 @@ export const AuthService = {
       sub: user.id,
       email: user.email,
       role: user.role,
-      tenantSchema: stored.tenant_schema,
     });
 
     return { accessToken, newRefreshToken };
@@ -283,6 +270,19 @@ export const AuthService = {
     await refreshTokenRepository.invalidateFamily(stored.family);
   },
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new NotFoundError('Usuario no encontrado');
+
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) throw new UnauthorizedError('Contraseña actual incorrecta');
+
+    if (newPassword.length < 8) throw new ValidationError('La nueva contraseña debe tener al menos 8 caracteres');
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await userRepository.updatePassword(userId, passwordHash);
+  },
+
   async createUser(
     email: string,
     password: string,
@@ -294,8 +294,14 @@ export const AuthService = {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
+    const user = await userRepository.createVerified({ email, passwordHash, role });
 
-    // Insert already verified — no email verification flow for admin-created users
-    return userRepository.createVerified({ email, passwordHash, role });
+    try {
+      await sendWelcomeEmail(email, password);
+    } catch (err) {
+      console.error('[mailer] Failed to send welcome email:', err);
+    }
+
+    return user;
   },
 };

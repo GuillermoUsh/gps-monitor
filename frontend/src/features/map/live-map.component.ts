@@ -10,7 +10,6 @@ import {
 import { CommonModule, Location } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { TenantService } from '../../core/tenant/tenant.service';
 import { SocketService } from '../../core/socket/socket.service';
 import { PositionService } from '../../core/api/position.service';
 import { ButtonModule } from 'primeng/button';
@@ -31,7 +30,6 @@ export class LiveMapComponent implements OnInit, OnDestroy {
 
   protected socketService  = inject(SocketService);
   private authService      = inject(AuthService);
-  private tenantService    = inject(TenantService);
   private positionService  = inject(PositionService);
   private location         = inject(Location);
 
@@ -59,9 +57,8 @@ export class LiveMapComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     await this.initMap();
     const token = this.authService.accessToken() ?? '';
-    const slug = this.tenantService.agencySlug();
-    if (token && slug) {
-      this.socketService.connect(token, slug);
+    if (token) {
+      this.socketService.connect(token);
     }
     await this.loadInitialPositions();
   }

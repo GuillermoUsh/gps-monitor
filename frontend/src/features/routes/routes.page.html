@@ -40,8 +40,14 @@
         <td class="text-center">{{ route.waypointCount }}</td>
         <td><p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" /></td>
         <td>
-          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
-                    (onClick)="confirmDelete(route)" pTooltip="Eliminar" />
+          <p-button icon="pi pi-map" severity="info" [text]="true" size="small"
+                    (onClick)="openPreview(route)" pTooltip="Ver en mapa" styleClass="mr-1" />
+          @if (isAdmin) {
+            <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
+                      (onClick)="openEditDialog(route)" pTooltip="Editar" styleClass="mr-1" />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                      (onClick)="confirmDelete(route)" pTooltip="Eliminar" />
+          }
         </td>
       </tr>
     </ng-template>
@@ -57,9 +63,28 @@
 
 </div>
 
-<!-- Create Route Dialog -->
+<!-- Preview Route Dialog -->
 <p-dialog
-  header="Nueva ruta"
+  [header]="previewRoute()?.name ?? 'Ruta'"
+  [visible]="showPreviewDialog()"
+  (visibleChange)="showPreviewDialog.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  [draggable]="false"
+  (onShow)="onPreviewDialogShow()"
+  (onHide)="onPreviewDialogHide()"
+>
+  <div class="preview-info mb-3 flex gap-6 text-sm text-gray-600">
+    <span><i class="pi pi-map-marker mr-1 text-green-500"></i>{{ previewRoute()?.origin }}</span>
+    <span><i class="pi pi-flag mr-1 text-red-500"></i>{{ previewRoute()?.destination }}</span>
+    <span><i class="pi pi-circle mr-1 text-blue-500"></i>{{ previewRoute()?.waypointCount }} waypoints</span>
+  </div>
+  <div #previewMapContainer style="height: 450px; width: 100%; border-radius: 8px; overflow: hidden;"></div>
+</p-dialog>
+
+<!-- Create / Edit Route Dialog -->
+<p-dialog
+  [header]="editingRouteId ? 'Editar ruta' : 'Nueva ruta'"
   [visible]="showCreateDialog()"
   (visibleChange)="showCreateDialog.set($event)"
   [modal]="true"
@@ -125,7 +150,7 @@
   <ng-template #footer>
     <p-button label="Cancelar" severity="secondary" [text]="true"
               (onClick)="showCreateDialog.set(false)" />
-    <p-button label="Crear ruta" icon="pi pi-check"
+    <p-button [label]="editingRouteId ? 'Guardar cambios' : 'Crear ruta'" icon="pi pi-check"
               [loading]="saving()" [disabled]="formWaypoints.length < 2"
               (onClick)="saveRoute()" />
   </ng-template>

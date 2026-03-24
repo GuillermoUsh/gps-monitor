@@ -22,7 +22,7 @@ export class SocketService implements OnDestroy {
   readonly connectionStatus = signal<'connected' | 'disconnected' | 'error'>('disconnected');
   readonly positions = signal<Map<string, PositionUpdatePayload>>(new Map());
 
-  connect(token: string, agencySlug: string): void {
+  connect(token: string): void {
     if (this.socket?.connected) {
       return;
     }
@@ -32,7 +32,6 @@ export class SocketService implements OnDestroy {
     this.socket = io(socketUrl, { auth: { token } });
 
     this.socket.on('connect', () => {
-      this.socket!.emit('join:agency', agencySlug);
       this.connectionStatus.set('connected');
     });
 

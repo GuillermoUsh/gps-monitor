@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { TenantService } from '../tenant/tenant.service';
+import { environment } from '../../environments/environment';
 
 export interface PositionInput {
   lat: number;
@@ -21,10 +21,9 @@ export interface LatestPosition {
 @Injectable({ providedIn: 'root' })
 export class PositionService {
   private readonly http = inject(HttpClient);
-  private readonly tenantService = inject(TenantService);
 
   private get base(): string {
-    return this.tenantService.getApiBase();
+    return environment.apiUrl;
   }
 
   sendPosition(tripId: string, body: PositionInput): Observable<unknown> {

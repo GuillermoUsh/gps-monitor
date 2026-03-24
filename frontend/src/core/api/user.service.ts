@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { TenantService } from '../tenant/tenant.service';
+import { environment } from '../../environments/environment';
 
 export interface UserDto {
   id: string;
@@ -20,9 +20,8 @@ export interface CreateUserInput {
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly http = inject(HttpClient);
-  private readonly tenantService = inject(TenantService);
 
-  private get base() { return this.tenantService.getApiBase(); }
+  private get base() { return environment.apiUrl; }
 
   getUsers(): Observable<UserDto[]> {
     return this.http.get<{ data: UserDto[] }>(`${this.base}/users`).pipe(map(r => r.data));

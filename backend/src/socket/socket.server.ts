@@ -10,7 +10,7 @@ interface ServerToClientEvents {
 }
 
 interface ClientToServerEvents {
-  [SOCKET_EVENTS.JOIN_AGENCY]: (slug: string) => void;
+  [SOCKET_EVENTS.JOIN_AGENCY]: () => void;
 }
 
 interface InterServerEvents {
@@ -72,12 +72,9 @@ export class SocketServer {
 
       try {
         const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-        const slug = payload.tenantSchema.replace('agency_', '');
         socket.data = {
-          userId:       payload.sub,
-          tenantSchema: payload.tenantSchema,
-          slug,
-          role:         payload.role,
+          userId: payload.sub,
+          role:   payload.role,
         };
         next();
       } catch {
@@ -88,14 +85,15 @@ export class SocketServer {
 
   private setupHandlers(): void {
     this.io.on('connection', (socket: TypedSocket) => {
-      socket.on(SOCKET_EVENTS.JOIN_AGENCY, (slug: string) => {
-        if (slug !== socket.data.slug) return;
-        void socket.join(`agency:${slug}`);
+      void socket.join('gps');
+
+      socket.on(SOCKET_EVENTS.JOIN_AGENCY, () => {
+        void socket.join('gps');
       });
     });
   }
 
-  emitPositionUpdate(slug: string, payload: PositionUpdatePayload): void {
-    this.io.to(`agency:${slug}`).emit(SOCKET_EVENTS.POSITION_UPDATE, payload);
+  emitPositionUpdate(payload: PositionUpdatePayload): void {
+    this.io.to('gps').emit(SOCKET_EVENTS.POSITION_UPDATE, payload);
   }
 }

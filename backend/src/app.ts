@@ -3,9 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import { tenantMiddleware } from './tenant/tenant.middleware';
 import { errorHandler } from './middleware/error-handler';
-import agenciesRouter from './routes/agencies.routes';
 import authRouter from './routes/auth.routes';
 import routesRouter from './routes/routes.routes';
 import tripsRouter from './routes/trips.routes';
@@ -32,23 +30,21 @@ export function createApp(): express.Application {
       callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
     },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'bypass-tunnel-reminder'],
   }));
   app.use(express.json());
   app.use(cookieParser());
 
-  // Health check (no tenant required)
+  // Health check
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // Public routes (no tenant middleware)
-  app.use('/agencies', agenciesRouter);
-
-  // Tenant-scoped routes
-  app.use('/auth',   tenantMiddleware, authRouter);
-  app.use('/routes', tenantMiddleware, routesRouter);
-  app.use('/trips',  tenantMiddleware, tripsRouter);
-  app.use('/users',  tenantMiddleware, usersRouter);
+  // Routes
+  app.use('/auth',   authRouter);
+  app.use('/routes', routesRouter);
+  app.use('/trips',  tripsRouter);
+  app.use('/users',  usersRouter);
 
   // Global error handler (must be before static fallback)
   app.use(errorHandler);

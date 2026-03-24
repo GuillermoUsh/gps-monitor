@@ -2,16 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { TenantService } from '../tenant/tenant.service';
+import { environment } from '../../environments/environment';
 import { TripDto } from './api.types';
 
 @Injectable({ providedIn: 'root' })
 export class TripService {
   private readonly http = inject(HttpClient);
-  private readonly tenantService = inject(TenantService);
 
   private get base(): string {
-    return this.tenantService.getApiBase();
+    return environment.apiUrl;
   }
 
   getTrips(): Observable<TripDto[]> {

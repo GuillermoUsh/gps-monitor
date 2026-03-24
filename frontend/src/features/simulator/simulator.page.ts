@@ -111,7 +111,8 @@ export class SimulatorPage implements OnInit, OnDestroy {
   private async drawRoute(route: RouteDto): Promise<void> {
     if (!this.map || !route.waypoints?.length) return;
 
-    const L = await import('leaflet');
+    const leafletModule = await import('leaflet');
+    const L = (leafletModule as any).default ?? leafletModule;
 
     const sorted = [...route.waypoints].sort((a, b) => a.order - b.order);
     const latlngs = sorted.map(wp => [wp.lat, wp.lng] as [number, number]);
@@ -157,7 +158,8 @@ export class SimulatorPage implements OnInit, OnDestroy {
   }
 
   private async initMap(): Promise<void> {
-    const L = await import('leaflet');
+    const leafletModule = await import('leaflet');
+    const L = (leafletModule as any).default ?? leafletModule;
 
     this.map = L.map(this.mapContainer.nativeElement).setView([-54.8, -68.3], 13);
 
@@ -189,7 +191,7 @@ export class SimulatorPage implements OnInit, OnDestroy {
         }),
       );
 
-      import('leaflet').then(L => this.placeCurrentMarker(L, this.lat(), this.lng()));
+      import('leaflet').then(mod => this.placeCurrentMarker((mod as any).default ?? mod, this.lat(), this.lng()));
 
       this.messageService.add({
         severity: 'success',
