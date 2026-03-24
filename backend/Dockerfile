@@ -1,15 +1,21 @@
-# Build stage
+# Stage 1: Build Angular frontend
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend .
+RUN npm run build -- --configuration=docker
+
+# Stage 2: Build Node backend
 FROM node:20-alpine AS builder
 WORKDIR /app
-
 COPY backend/package*.json ./
 RUN npm ci
-
 COPY backend/tsconfig.json ./
 COPY backend/src ./src
 RUN npm run build
 
-# Production stage
+# Stage 3: Production
 FROM node:20-alpine AS production
 WORKDIR /app
 
@@ -20,8 +26,8 @@ COPY backend/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
+COPY --from=frontend-builder /app/dist/frontend/browser ./public
 
-# Migrations must be at /db (path hardcoded in migrate.ts as ../../../db from /app/dist/db)
 USER root
 COPY db /db
 RUN chown -R nodeuser:nodejs /db
