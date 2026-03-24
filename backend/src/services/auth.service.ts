@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { env } from '../config/env';
 import { UserRepository } from '../repositories/user.repository';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
@@ -16,44 +16,21 @@ import { JwtPayload, RefreshTokenPayload, UserRole } from '../shared/types';
 const userRepository = new UserRepository();
 const refreshTokenRepository = new RefreshTokenRepository();
 
-let mailerTransport: nodemailer.Transporter | null = null;
+let resendClient: Resend | null = null;
 
-async function getMailer(): Promise<nodemailer.Transporter> {
-  if (mailerTransport) return mailerTransport;
-
-  if (env.SMTP_USER && env.SMTP_PASS) {
-    const port = env.SMTP_PORT ?? 465;
-    mailerTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST ?? 'smtp.gmail.com',
-      port,
-      secure: port === 465,
-      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-    });
-  } else if (env.ETHEREAL_USER && env.ETHEREAL_PASS) {
-    mailerTransport = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: { user: env.ETHEREAL_USER, pass: env.ETHEREAL_PASS },
-    });
-  } else {
-    const testAccount = await nodemailer.createTestAccount();
-    mailerTransport = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: { user: testAccount.user, pass: testAccount.pass },
-    });
-    console.log('[mailer] Ethereal test account:', testAccount.user);
+function getMailer(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(env.RESEND_API_KEY);
   }
-
-  return mailerTransport;
+  return resendClient;
 }
 
 async function sendVerificationEmail(email: string, token: string): Promise<void> {
-  const mailer = await getMailer();
+  if (!env.RESEND_API_KEY) return;
   const verifyUrl = `${env.APP_URL}/verify-email?token=${token}`;
 
-  await mailer.sendMail({
-    from: env.SMTP_FROM,
+  await getMailer().emails.send({
+    from: env.RESEND_FROM ?? 'GPS Monitor <onboarding@resend.dev>',
     to: email,
     subject: 'Verificá tu cuenta — GPS Monitor',
     html: `
@@ -66,12 +43,15 @@ async function sendVerificationEmail(email: string, token: string): Promise<void
 }
 
 async function sendWelcomeEmail(email: string, password: string): Promise<void> {
-  const mailer = await getMailer();
+  if (!env.RESEND_API_KEY) {
+    console.warn('[mailer] RESEND_API_KEY not set — skipping welcome email');
+    return;
+  }
   const loginUrl = `${env.APP_URL}/login`;
   console.log(`[mailer] Sending welcome email to ${email}`);
 
-  await mailer.sendMail({
-    from: env.SMTP_FROM,
+  await getMailer().emails.send({
+    from: env.RESEND_FROM ?? 'GPS Monitor <onboarding@resend.dev>',
     to: email,
     subject: 'Tu cuenta en GPS Monitor',
     html: `
