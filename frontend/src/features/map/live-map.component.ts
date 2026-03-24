@@ -86,14 +86,13 @@ export class LiveMapComponent implements OnInit, OnDestroy {
   private async initMap(): Promise<void> {
     const L = await import('leaflet');
 
-    // Fix default marker icons (Webpack asset issue)
-    const iconDefault = L.icon({
-      iconUrl: 'assets/marker-icon.png',
-      shadowUrl: 'assets/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
+    // Use divIcon as default to avoid missing asset issues in production
+    L.Marker.prototype.options.icon = L.divIcon({
+      className: 'marker-normal',
+      html: '<div style="width:12px;height:12px;border-radius:50%;background:#3b82f6;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>',
+      iconSize: [12, 12],
+      iconAnchor: [6, 6],
     });
-    L.Marker.prototype.options.icon = iconDefault;
 
     this.map = L.map(this.mapContainer.nativeElement).setView([-54.8, -68.3], 13);
 
