@@ -12,12 +12,11 @@ export class RouteWaypointRepository extends BaseRepository {
     const placeholders = waypoints.map((w, i) => {
       const base = i * 4;
       values.push(routeId, w.lat, w.lng, w.order);
-      // position as ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
-      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, ST_SetSRID(ST_MakePoint($${base + 3}, $${base + 2}), 4326)::geography)`;
+      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`;
     });
 
     await this.query(
-      `INSERT INTO route_waypoints (route_id, lat, lng, "order", position)
+      `INSERT INTO route_waypoints (route_id, lat, lng, "order")
        VALUES ${placeholders.join(', ')}`,
       values,
     );

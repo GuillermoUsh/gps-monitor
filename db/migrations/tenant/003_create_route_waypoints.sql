@@ -4,8 +4,6 @@ CREATE TABLE route_waypoints (
   lat       DOUBLE PRECISION NOT NULL,
   lng       DOUBLE PRECISION NOT NULL,
   "order"   INTEGER NOT NULL,
-  position  GEOGRAPHY(POINT, 4326) NOT NULL,
   CONSTRAINT uq_route_waypoint_order UNIQUE (route_id, "order")
 );
 CREATE INDEX idx_route_waypoints_route_id ON route_waypoints (route_id);
-CREATE INDEX idx_route_waypoints_position ON route_waypoints USING GIST (position);

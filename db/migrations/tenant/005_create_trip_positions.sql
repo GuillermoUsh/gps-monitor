@@ -3,7 +3,6 @@ CREATE TABLE trip_positions (
   trip_id          UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
   lat              DOUBLE PRECISION NOT NULL,
   lng              DOUBLE PRECISION NOT NULL,
-  position         GEOGRAPHY(POINT, 4326) NOT NULL,
   speed_kmh        DOUBLE PRECISION,
   is_deviation     BOOLEAN NOT NULL DEFAULT FALSE,
   deviation_meters DOUBLE PRECISION,
@@ -11,4 +10,3 @@ CREATE TABLE trip_positions (
 );
 CREATE INDEX idx_trip_positions_trip_id     ON trip_positions (trip_id);
 CREATE INDEX idx_trip_positions_recorded_at ON trip_positions (trip_id, recorded_at DESC);
-CREATE INDEX idx_trip_positions_position    ON trip_positions USING GIST (position);

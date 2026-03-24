@@ -3,11 +3,34 @@ import { env } from '../config/env';
 import { getTenantContext } from '../tenant/tenant.context';
 import { TripRepository } from '../repositories/trip.repository';
 import { TripPositionRepository } from '../repositories/trip-position.repository';
+import { RouteWaypointRepository } from '../repositories/route-waypoint.repository';
 import { IngestPositionInput, PositionDto, PositionUpdatePayload } from '../shared/types';
 import { NotFoundError, ConflictError, ForbiddenError } from '../shared/errors/app.error';
 
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function distanceToSegmentMeters(
+  lat: number, lng: number,
+  aLat: number, aLng: number,
+  bLat: number, bLng: number,
+): number {
+  const dx = bLng - aLng;
+  const dy = bLat - aLat;
+  if (dx === 0 && dy === 0) return haversineMeters(lat, lng, aLat, aLng);
+  const t = Math.max(0, Math.min(1, ((lng - aLng) * dx + (lat - aLat) * dy) / (dx * dx + dy * dy)));
+  return haversineMeters(lat, lng, aLat + t * dy, aLng + t * dx);
+}
+
 const tripRepository = new TripRepository();
 const positionRepository = new TripPositionRepository();
+const waypointRepository = new RouteWaypointRepository();
 
 export const PositionService = {
   async ingest(
@@ -41,37 +64,27 @@ export const PositionService = {
       // 2. Calculate distance from previous position and accumulate km
       const prev = await positionRepository.findPreviousByTrip(tripId, client);
       if (prev) {
-        const distResult = await client.query<{ dist_meters: number }>(
-          `SELECT ST_Distance(
-             ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
-             ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography
-           ) AS dist_meters`,
-          [prev.lng, prev.lat, lng, lat],
-        );
-        const deltaKm = distResult.rows[0].dist_meters / 1000;
+        const deltaKm = haversineMeters(prev.lat, prev.lng, lat, lng) / 1000;
         await tripRepository.accumulateDistance(tripId, deltaKm, client);
       }
 
-      // 3. Deviation detection via ST_DWithin
-      const deviationResult = await client.query<{ within_route: boolean; dist_meters: number }>(
-        `SELECT
-           ST_DWithin(
-             ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
-             route_path,
-             $3
-           ) AS within_route,
-           ST_Distance(
-             ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
-             route_path
-           ) AS dist_meters
-         FROM routes WHERE id = $4`,
-        [lat, lng, env.DEVIATION_THRESHOLD_METERS, trip.route_id],
-      );
-
-      if (deviationResult.rows[0]) {
-        isDeviation = !deviationResult.rows[0].within_route;
-        deviationMeters = deviationResult.rows[0].dist_meters;
-        await positionRepository.updateDeviation(positionId, isDeviation, deviationMeters, client);
+      // 3. Deviation detection via Haversine against route waypoints
+      if (trip.route_id) {
+        const waypoints = await waypointRepository.findByRouteId(trip.route_id);
+        if (waypoints.length >= 2) {
+          let minDist = Infinity;
+          for (let i = 0; i < waypoints.length - 1; i++) {
+            const d = distanceToSegmentMeters(
+              lat, lng,
+              waypoints[i].lat, waypoints[i].lng,
+              waypoints[i + 1].lat, waypoints[i + 1].lng,
+            );
+            if (d < minDist) minDist = d;
+          }
+          deviationMeters = minDist;
+          isDeviation = minDist > env.DEVIATION_THRESHOLD_METERS;
+          await positionRepository.updateDeviation(positionId, isDeviation, deviationMeters, client);
+        }
       }
 
       await client.query('COMMIT');

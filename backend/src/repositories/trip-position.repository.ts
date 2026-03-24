@@ -12,8 +12,8 @@ interface InsertPositionInput {
 export class TripPositionRepository extends BaseRepository {
   async insert(input: InsertPositionInput, client: PoolClient): Promise<{ id: string }> {
     const result = await client.query<{ id: string }>(
-      `INSERT INTO trip_positions (trip_id, lat, lng, position, speed_kmh, recorded_at)
-       VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography, $4, $5)
+      `INSERT INTO trip_positions (trip_id, lat, lng, speed_kmh, recorded_at)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
       [input.tripId, input.lat, input.lng, input.speedKmh ?? null, input.recordedAt],
     );

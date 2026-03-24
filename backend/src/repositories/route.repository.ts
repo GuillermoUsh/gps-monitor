@@ -25,23 +25,11 @@ export class RouteRepository extends BaseRepository {
   }
 
   async create(input: CreateRouteInput): Promise<RouteRow> {
-    // Build ST_MakeLine from waypoints ordered by "order"
-    const sorted = [...input.waypoints].sort((a, b) => a.order - b.order);
-    const pointExpressions = sorted.map(
-      (_, i) => `ST_SetSRID(ST_MakePoint($${2 * i + 5}, $${2 * i + 4}), 4326)::geometry`,
-    );
-    const lineSql = `ST_MakeLine(ARRAY[${pointExpressions.join(', ')}])::geography`;
-
-    const coordParams: number[] = [];
-    sorted.forEach(w => {
-      coordParams.push(w.lat, w.lng);
-    });
-
     const rows = await this.query<RouteRow>(
-      `INSERT INTO routes (name, origin, destination, route_path)
-       VALUES ($1, $2, $3, ${lineSql})
+      `INSERT INTO routes (name, origin, destination)
+       VALUES ($1, $2, $3)
        RETURNING id, name, origin, destination, status, created_at, updated_at`,
-      [input.name, input.origin, input.destination, ...coordParams],
+      [input.name, input.origin, input.destination],
     );
     return rows[0];
   }
