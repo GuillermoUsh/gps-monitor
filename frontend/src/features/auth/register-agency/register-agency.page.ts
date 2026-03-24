@@ -78,8 +78,10 @@ export class RegisterAgencyPage {
     this.error.set(null);
 
     try {
+      const slug = this.form.value.slug as string;
       const url = `${this.tenantService.getApiBase()}/agencies`;
       await firstValueFrom(this.http.post(url, this.form.value));
+      localStorage.setItem('agency_slug', slug);
       this.success.set(true);
     } catch (err: unknown) {
       const message = (err as { error?: { message?: string } })?.error?.message;
