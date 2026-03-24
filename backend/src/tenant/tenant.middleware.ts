@@ -12,7 +12,7 @@ export async function tenantMiddleware(
 
   // Try subdomain first (fria.localhost or fria.domain.com)
   const isLocalhostDev = parts.length === 2 && parts[1] === 'localhost';
-  const hasSubdomain = (parts.length >= 3 || isLocalhostDev) && parts[0] !== 'www';
+  const hasSubdomain = (parts.length === 3 || isLocalhostDev) && parts[0] !== 'www';
 
   // Fallback: X-Agency-Slug header (for ngrok / single-domain deployments)
   const headerSlug = req.headers['x-agency-slug'] as string | undefined;
