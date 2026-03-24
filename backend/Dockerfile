@@ -1,3 +1,4 @@
+# GPS Monitor - unified build
 # Stage 1: Build Angular frontend
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
