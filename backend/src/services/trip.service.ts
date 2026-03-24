@@ -32,10 +32,10 @@ export const TripService = {
     };
   },
 
-  async completeTrip(tripId: string, requestingDriverId: string): Promise<TripDto> {
+  async completeTrip(tripId: string, requestingUserId: string, role?: string): Promise<TripDto> {
     const trip = await tripRepository.findById(tripId);
     if (!trip) throw new NotFoundError('Viaje no encontrado');
-    if (trip.driver_id !== requestingDriverId) throw new ForbiddenError('No tenés permiso para modificar este viaje');
+    if (role !== 'admin' && trip.driver_id !== requestingUserId) throw new ForbiddenError('No tenés permiso para modificar este viaje');
     if (trip.status !== 'active') throw new ConflictError('El viaje no está activo');
 
     const updated = await tripRepository.updateStatus(tripId, 'completed', new Date());
@@ -53,10 +53,10 @@ export const TripService = {
     };
   },
 
-  async cancelTrip(tripId: string, requestingDriverId: string): Promise<TripDto> {
+  async cancelTrip(tripId: string, requestingUserId: string, role?: string): Promise<TripDto> {
     const trip = await tripRepository.findById(tripId);
     if (!trip) throw new NotFoundError('Viaje no encontrado');
-    if (trip.driver_id !== requestingDriverId) throw new ForbiddenError('No tenés permiso para cancelar este viaje');
+    if (role !== 'admin' && trip.driver_id !== requestingUserId) throw new ForbiddenError('No tenés permiso para cancelar este viaje');
     if (trip.status !== 'active') throw new ConflictError('El viaje no está activo');
 
     const updated = await tripRepository.updateStatus(tripId, 'cancelled', new Date());

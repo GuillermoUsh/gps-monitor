@@ -22,10 +22,11 @@ export const TripController = {
       const driverId = req.user!.sub;
 
       let trip;
+      const role = req.user!.role;
       if (action === TRIP_ACTION.COMPLETE) {
-        trip = await TripService.completeTrip(tripId, driverId);
+        trip = await TripService.completeTrip(tripId, driverId, role);
       } else if (action === TRIP_ACTION.CANCEL) {
-        trip = await TripService.cancelTrip(tripId, driverId);
+        trip = await TripService.cancelTrip(tripId, driverId, role);
       } else {
         throw new ValidationError(`Acción inválida: ${action}`);
       }
