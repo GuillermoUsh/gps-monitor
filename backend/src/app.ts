@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import { tenantMiddleware } from './tenant/tenant.middleware';
 import { errorHandler } from './middleware/error-handler';
 import agenciesRouter from './routes/agencies.routes';
@@ -46,8 +47,17 @@ export function createApp(): express.Application {
   app.use('/trips',  tenantMiddleware, tripsRouter);
   app.use('/users',  tenantMiddleware, usersRouter);
 
-  // Global error handler (must be last)
+  // Global error handler (must be before static fallback)
   app.use(errorHandler);
+
+  // Serve Angular frontend (production only)
+  const publicDir = path.join(__dirname, '../public');
+  console.log('[static] publicDir:', publicDir);
+  console.log('[static] index.html exists:', require('fs').existsSync(path.join(publicDir, 'index.html')));
+  app.use(express.static(publicDir));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
 
   return app;
 }

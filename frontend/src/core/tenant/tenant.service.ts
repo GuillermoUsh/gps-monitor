@@ -30,7 +30,7 @@ export class TenantService {
     const slug = this.resolveSlug();
 
     // Relative URL (Docker/single-domain): use as-is, slug goes via header
-    if (environment.apiUrl.startsWith('/')) {
+    if (environment.apiUrl === '' || environment.apiUrl.startsWith('/')) {
       return environment.apiUrl;
     }
 
