@@ -15,7 +15,10 @@ export function createApp(): express.Application {
   const app = express();
 
   // Security & parsing
-  app.use(helmet({ contentSecurityPolicy: false }));
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  }));
   app.use(cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
