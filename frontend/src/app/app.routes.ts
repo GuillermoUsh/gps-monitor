@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../core/auth/auth.guard';
+import { tenantGuard } from '../core/tenant/tenant.guard';
 
 export const routes: Routes = [
   {
@@ -8,7 +9,13 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'setup',
+    loadComponent: () =>
+      import('../features/auth/setup/setup.page').then((m) => m.SetupPage),
+  },
+  {
     path: 'login',
+    canActivate: [tenantGuard],
     loadComponent: () =>
       import('../features/auth/login/login.page').then((m) => m.LoginPage),
   },

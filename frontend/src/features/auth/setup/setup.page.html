@@ -1,0 +1,29 @@
+<div class="login-wrapper">
+  <div class="login-box">
+
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">🏢</div>
+      <h1 class="text-2xl font-bold text-gray-800">GPS Monitor</h1>
+      <p class="text-gray-500 mt-1">Ingresá el código de tu agencia</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+
+      <div class="flex flex-col gap-2">
+        <label for="slug" class="font-semibold text-sm text-gray-700">Código de agencia</label>
+        <input pInputText id="slug" type="text"
+               formControlName="slug" placeholder="ej: jujuy"
+               autocomplete="off" autocapitalize="none" class="w-full" />
+        <small class="text-gray-400">Solo letras minúsculas, números y guiones</small>
+      </div>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full" />
+      }
+
+      <p-button type="submit" label="Continuar" icon="pi pi-arrow-right"
+                [disabled]="form.invalid" styleClass="w-full" />
+    </form>
+
+  </div>
+</div>
