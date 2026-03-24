@@ -20,9 +20,9 @@ export class TripService {
       .pipe(map(res => res.data));
   }
 
-  startTrip(routeId: string): Observable<TripDto> {
+  startTrip(routeId: string, driverId?: string): Observable<TripDto> {
     return this.http
-      .post<{ data: TripDto }>(`${this.base}/trips`, { routeId })
+      .post<{ data: TripDto }>(`${this.base}/trips`, { routeId, driverId })
       .pipe(map(res => res.data));
   }
 

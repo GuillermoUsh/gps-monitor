@@ -11,7 +11,8 @@ const router = Router();
 
 const createTripSchema = z.object({
   body: z.object({
-    routeId: z.string().uuid(),
+    routeId:  z.string().uuid(),
+    driverId: z.string().uuid().optional(),
   }),
 });
 

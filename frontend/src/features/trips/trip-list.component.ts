@@ -16,6 +16,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { TripService } from '../../core/api/trip.service';
 import { RouteService } from '../../core/api/route.service';
+import { UserService, UserDto } from '../../core/api/user.service';
 import { TripDto, RouteDto } from '../../core/api/api.types';
 
 @Component({
@@ -40,16 +41,19 @@ import { TripDto, RouteDto } from '../../core/api/api.types';
 export class TripListComponent implements OnInit {
   private readonly tripService = inject(TripService);
   private readonly routeService = inject(RouteService);
+  private readonly userService = inject(UserService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
 
   trips = signal<TripDto[]>([]);
   routes = signal<RouteDto[]>([]);
+  drivers = signal<UserDto[]>([]);
   loading = signal(false);
   showNewTripDialog = signal(false);
   starting = signal(false);
 
   selectedRouteId: string | null = null;
+  selectedDriverId: string | null = null;
 
   ngOnInit(): void {
     this.loadTrips();
@@ -73,34 +77,29 @@ export class TripListComponent implements OnInit {
 
   async openNewTripDialog(): Promise<void> {
     this.selectedRouteId = null;
+    this.selectedDriverId = null;
     this.showNewTripDialog.set(true);
-    if (this.routes().length === 0) {
-      try {
-        const data = await firstValueFrom(this.routeService.getRoutes());
-        this.routes.set(data);
-      } catch {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Advertencia',
-          detail: 'No se pudieron cargar las rutas',
-        });
-      }
-    }
+    const [routes, users] = await Promise.allSettled([
+      this.routes().length === 0 ? firstValueFrom(this.routeService.getRoutes()) : Promise.resolve(this.routes()),
+      this.drivers().length === 0 ? firstValueFrom(this.userService.getUsers()) : Promise.resolve(this.drivers()),
+    ]);
+    if (routes.status === 'fulfilled') this.routes.set(routes.value);
+    if (users.status === 'fulfilled') this.drivers.set(users.value.filter(u => u.role === 'driver'));
   }
 
   async startTrip(): Promise<void> {
-    if (!this.selectedRouteId) {
+    if (!this.selectedRouteId || !this.selectedDriverId) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Requerido',
-        detail: 'Seleccioná una ruta para iniciar el viaje',
+        detail: 'Seleccioná una ruta y un chofer para iniciar el viaje',
       });
       return;
     }
 
     this.starting.set(true);
     try {
-      const trip = await firstValueFrom(this.tripService.startTrip(this.selectedRouteId));
+      const trip = await firstValueFrom(this.tripService.startTrip(this.selectedRouteId, this.selectedDriverId ?? undefined));
       this.trips.update(list => [trip, ...list]);
       this.showNewTripDialog.set(false);
       this.messageService.add({
@@ -170,5 +169,9 @@ export class TripListComponent implements OnInit {
 
   get routeOptions() {
     return this.routes().map(r => ({ label: r.name, value: r.id }));
+  }
+
+  get driverOptions() {
+    return this.drivers().map(d => ({ label: d.email, value: d.id }));
   }
 }

@@ -7,7 +7,8 @@ import { TRIP_ACTION } from '../shared/types';
 export const TripController = {
   async start(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const trip = await TripService.startTrip(req.user!.sub, req.body);
+      const driverId = req.body.driverId ?? req.user!.sub;
+      const trip = await TripService.startTrip(driverId, req.body);
       res.status(201).json({ status: 'success', data: trip });
     } catch (err) {
       next(err);

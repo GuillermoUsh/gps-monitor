@@ -122,6 +122,18 @@
         filterPlaceholder="Buscar ruta..."
       />
     </div>
+    <div class="field mt-4">
+      <label>Asignar chofer</label>
+      <p-select
+        [options]="driverOptions"
+        [(ngModel)]="selectedDriverId"
+        placeholder="-- Elegí un chofer --"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+        [filter]="true"
+        filterPlaceholder="Buscar chofer..."
+      />
+    </div>
   </div>
 
   <ng-template #footer>
