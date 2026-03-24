@@ -8,7 +8,7 @@ export class TenantService {
     // 1. Subdomain: fria.localhost or fria.domain.com
     const hostname = window.location.hostname;
     const parts = hostname.split('.');
-    if (parts.length >= 2 && parts[0] !== 'localhost' && parts[0] !== 'www') {
+    if (parts.length >= 2 && parts.length <= 3 && parts[0] !== 'localhost' && parts[0] !== 'www') {
       return parts[0];
     }
     // 2. Query param: ?agency=fria
