@@ -84,7 +84,9 @@ export class LiveMapComponent implements OnInit, OnDestroy {
   }
 
   private async initMap(): Promise<void> {
-    const L = await import('leaflet');
+    const leafletModule = await import('leaflet');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const L = (leafletModule as any).default ?? leafletModule;
 
 
     this.map = L.map(this.mapContainer.nativeElement).setView([-54.8, -68.3], 13);
@@ -107,7 +109,9 @@ export class LiveMapComponent implements OnInit, OnDestroy {
 
     const existing = this.markers.get(tripId);
 
-    import('leaflet').then(L => {
+    import('leaflet').then(leafletModule => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const L = (leafletModule as any).default ?? leafletModule;
       const icon = L.divIcon({
         className: payload.isDeviation ? 'marker-deviation' : 'marker-normal',
         html: `<div style="width:14px;height:14px;border-radius:50%;background:${payload.isDeviation ? '#e53e3e' : '#38a169'};border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,.4)"></div>`,
