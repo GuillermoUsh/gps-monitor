@@ -22,10 +22,11 @@ async function getMailer(): Promise<nodemailer.Transporter> {
   if (mailerTransport) return mailerTransport;
 
   if (env.SMTP_USER && env.SMTP_PASS) {
+    const port = env.SMTP_PORT ?? 465;
     mailerTransport = nodemailer.createTransport({
       host: env.SMTP_HOST ?? 'smtp.gmail.com',
-      port: env.SMTP_PORT ?? 587,
-      secure: false,
+      port,
+      secure: port === 465,
       auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
     });
   } else if (env.ETHEREAL_USER && env.ETHEREAL_PASS) {
@@ -67,6 +68,7 @@ async function sendVerificationEmail(email: string, token: string): Promise<void
 async function sendWelcomeEmail(email: string, password: string): Promise<void> {
   const mailer = await getMailer();
   const loginUrl = `${env.APP_URL}/login`;
+  console.log(`[mailer] Sending welcome email to ${email}`);
 
   await mailer.sendMail({
     from: env.SMTP_FROM,
@@ -83,6 +85,7 @@ async function sendWelcomeEmail(email: string, password: string): Promise<void> 
       <p><a href="${loginUrl}">Ingresar a GPS Monitor</a></p>
     `,
   });
+  console.log(`[mailer] Welcome email sent to ${email}`);
 }
 
 function generateVerificationToken(): { token: string; expires: Date } {
