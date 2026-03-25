@@ -14,6 +14,7 @@ export class RefreshTokenRepository extends BaseRepository {
       `INSERT INTO refresh_tokens
          (token_hash, user_id, family, expires_at)
        VALUES ($1, $2, $3, $4)
+       ON CONFLICT (token_hash) DO NOTHING
        RETURNING *`,
       [data.tokenHash, data.userId, data.family, data.expiresAt],
     );

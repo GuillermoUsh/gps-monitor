@@ -1,8 +1,11 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { from, switchMap, catchError, throwError } from 'rxjs';
+import { from, switchMap, catchError, throwError, share } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
+
+// Shared refresh observable — prevents concurrent refresh calls
+let refreshInProgress$: ReturnType<typeof from> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
@@ -24,7 +27,14 @@ export const authInterceptor: HttpInterceptorFn = (
         !req.url.includes('/auth/refresh') &&
         !req.url.includes('/auth/login')
       ) {
-        return from(authService.refresh()).pipe(
+        if (!refreshInProgress$) {
+          refreshInProgress$ = from(authService.refresh()).pipe(
+            share(),
+          );
+          refreshInProgress$.subscribe({ complete: () => { refreshInProgress$ = null; } });
+        }
+
+        return refreshInProgress$.pipe(
           switchMap((refreshed) => {
             if (refreshed) {
               const newToken = authService.accessToken();
@@ -35,7 +45,11 @@ export const authInterceptor: HttpInterceptorFn = (
             }
             router.navigate(['/login']);
             return throwError(() => error);
-          })
+          }),
+          catchError(() => {
+            router.navigate(['/login']);
+            return throwError(() => error);
+          }),
         );
       }
       return throwError(() => error);
