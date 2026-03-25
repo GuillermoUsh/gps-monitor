@@ -38,11 +38,15 @@ export class UsersPage implements OnInit {
   users = signal<UserDto[]>([]);
   loading = signal(false);
   showCreateDialog = signal(false);
+  showCredentialsDialog = signal(false);
   saving = signal(false);
 
   formEmail = '';
   formPassword = '';
   formRole: string = 'driver';
+
+  createdEmail = '';
+  createdPassword = '';
 
   readonly roleOptions = [
     { label: 'Chofer', value: 'driver' },
@@ -89,8 +93,10 @@ export class UsersPage implements OnInit {
     this.userService.createUser(input).subscribe({
       next: user => {
         this.users.update(list => [user, ...list]);
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Usuario creado correctamente' });
         this.showCreateDialog.set(false);
+        this.createdEmail = this.formEmail;
+        this.createdPassword = this.formPassword;
+        this.showCredentialsDialog.set(true);
         this.saving.set(false);
       },
       error: () => {

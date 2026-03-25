@@ -111,4 +111,35 @@
       />
     </ng-template>
   </p-dialog>
+
+  <p-dialog
+    header="Usuario creado"
+    [visible]="showCredentialsDialog()"
+    (visibleChange)="showCredentialsDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '26rem' }"
+    [draggable]="false"
+  >
+    <div class="flex flex-column gap-3 pt-2">
+      <p class="text-sm text-color-secondary m-0">
+        Compartí estas credenciales con el usuario para que pueda ingresar al sistema.
+      </p>
+      <div class="field">
+        <label class="font-semibold text-sm">Email</label>
+        <input pInputText [value]="createdEmail" readonly [style]="{ width: '100%' }" />
+      </div>
+      <div class="field">
+        <label class="font-semibold text-sm">Contraseña</label>
+        <input pInputText [value]="createdPassword" readonly [style]="{ width: '100%' }" />
+      </div>
+    </div>
+    <ng-template #footer>
+      <p-button
+        label="Cerrar"
+        icon="pi pi-check"
+        (onClick)="showCredentialsDialog.set(false)"
+      />
+    </ng-template>
+  </p-dialog>
+
 </div>
