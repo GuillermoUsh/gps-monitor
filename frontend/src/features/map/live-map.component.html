@@ -1,3 +1,5 @@
+<p-toast />
+
 <div class="map-layout">
 
   <p-toolbar class="map-toolbar">
@@ -6,6 +8,15 @@
       <span class="ml-3 font-semibold">Mapa en vivo</span>
     </ng-template>
     <ng-template #end>
+      <p-button
+        icon="pi pi-map"
+        [label]="showTrail() ? 'Recorrido ON' : 'Recorrido OFF'"
+        [outlined]="!showTrail()"
+        severity="secondary"
+        size="small"
+        class="mr-3"
+        (onClick)="toggleTrail()"
+      />
       <span class="status-badge" [class.connected]="connectionStatus === 'connected'">
         {{ connectionStatus }}
       </span>
