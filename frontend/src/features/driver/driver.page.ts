@@ -118,7 +118,7 @@ export class DriverPage implements OnInit, OnDestroy {
     try {
       this.wakeLock = await (navigator as any).wakeLock.request('screen');
       // Re-acquire if released by the OS (e.g. tab goes background briefly)
-      this.wakeLock.addEventListener('release', () => {
+      this.wakeLock!.addEventListener('release', () => {
         if (this.tracking()) this.requestWakeLock();
       });
     } catch {
