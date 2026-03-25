@@ -39,6 +39,7 @@ export class DriverPage implements OnInit, OnDestroy {
   error = signal<string | null>(null);
 
   private watchId: number | null = null;
+  private wakeLock: WakeLockSentinel | null = null;
 
   ngOnInit(): void {
     this.loadTrips();
@@ -48,6 +49,7 @@ export class DriverPage implements OnInit, OnDestroy {
     if (this.watchId !== null) {
       navigator.geolocation.clearWatch(this.watchId);
     }
+    this.releaseWakeLock();
   }
 
   loadTrips(): void {
@@ -83,6 +85,7 @@ export class DriverPage implements OnInit, OnDestroy {
 
     this.activeTripId.set(tripId);
     this.tracking.set(true);
+    await this.requestWakeLock();
 
     this.watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -107,6 +110,27 @@ export class DriverPage implements OnInit, OnDestroy {
     }
     this.tracking.set(false);
     this.activeTripId.set(null);
+    this.releaseWakeLock();
+  }
+
+  private async requestWakeLock(): Promise<void> {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      this.wakeLock = await (navigator as any).wakeLock.request('screen');
+      // Re-acquire if released by the OS (e.g. tab goes background briefly)
+      this.wakeLock.addEventListener('release', () => {
+        if (this.tracking()) this.requestWakeLock();
+      });
+    } catch {
+      // Wake Lock not available — user may need to keep screen on manually
+    }
+  }
+
+  private releaseWakeLock(): void {
+    if (this.wakeLock) {
+      this.wakeLock.release();
+      this.wakeLock = null;
+    }
   }
 
   sendPosition(tripId: string, coords: GeolocationCoordinates): void {
