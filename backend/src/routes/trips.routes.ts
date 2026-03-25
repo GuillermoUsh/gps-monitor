@@ -52,6 +52,8 @@ router.patch(
   TripController.update,
 );
 
+router.get('/:tripId/positions', authenticate, PositionController.getTripHistory);
+
 router.post(
   '/:tripId/positions',
   validate(ingestPositionSchema),

@@ -8,4 +8,10 @@ export const TRIPS_ROUTES: Routes = [
       import('./trip-list.component').then(m => m.TripListComponent),
     canActivate: [authGuard],
   },
+  {
+    path: ':tripId/history',
+    loadComponent: () =>
+      import('./trip-history.page').then(m => m.TripHistoryPage),
+    canActivate: [authGuard],
+  },
 ];

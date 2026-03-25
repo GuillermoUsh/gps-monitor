@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { TripDto } from './api.types';
+import { TripDto, PositionHistoryDto, TripStatsDto } from './api.types';
 
 @Injectable({ providedIn: 'root' })
 export class TripService {
@@ -40,6 +40,12 @@ export class TripService {
   getMyTrips(): Observable<TripDto[]> {
     return this.http
       .get<{ data: TripDto[] }>(`${this.base}/trips/mine`)
+      .pipe(map(res => res.data));
+  }
+
+  getTripPositions(tripId: string): Observable<{ positions: PositionHistoryDto[]; stats: TripStatsDto }> {
+    return this.http
+      .get<{ data: { positions: PositionHistoryDto[]; stats: TripStatsDto } }>(`${this.base}/trips/${tripId}/positions`)
       .pipe(map(res => res.data));
   }
 }

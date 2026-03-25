@@ -23,3 +23,20 @@ export interface TripDto {
   distanceKm: number;
   startedAt: string;
 }
+
+export interface PositionHistoryDto {
+  id: string;
+  lat: number;
+  lng: number;
+  speedKmh: number | null;
+  isDeviation: boolean;
+  deviationMeters: number;
+  recordedAt: string;
+}
+
+export interface TripStatsDto {
+  totalPositions: number;
+  deviationCount: number;
+  maxSpeedKmh: number | null;
+  avgSpeedKmh: number | null;
+}

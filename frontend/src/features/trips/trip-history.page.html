@@ -1,0 +1,83 @@
+<div class="history-layout">
+
+  <p-toast />
+
+  <!-- Toolbar -->
+  <p-toolbar class="history-toolbar">
+    <ng-template #start>
+      <p-button icon="pi pi-arrow-left" label="Volver" [text]="true" (onClick)="goBack()" />
+      @if (trip()) {
+        <div class="trip-info ml-3">
+          <span class="trip-name">{{ trip()!.routeName ?? trip()!.routeId }}</span>
+          <p-tag
+            [value]="trip()!.status"
+            [severity]="getStatusSeverity(trip()!.status)"
+            styleClass="ml-2"
+          />
+          <span class="trip-date ml-2">{{ trip()!.startedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      } @else {
+        <span class="ml-3 font-semibold">Historial de viaje</span>
+      }
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Stats cards -->
+  @if (stats()) {
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Posiciones</div>
+        <div class="stat-value">{{ stats()!.totalPositions }}</div>
+      </div>
+      <div class="stat-card deviation">
+        <div class="stat-label">Desvíos</div>
+        <div class="stat-value">{{ stats()!.deviationCount }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vel. máxima</div>
+        <div class="stat-value">
+          @if (stats()!.maxSpeedKmh !== null) {
+            {{ stats()!.maxSpeedKmh | number:'1.0-1' }} km/h
+          } @else {
+            —
+          }
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vel. promedio</div>
+        <div class="stat-value">
+          @if (stats()!.avgSpeedKmh !== null) {
+            {{ stats()!.avgSpeedKmh | number:'1.0-1' }} km/h
+          } @else {
+            —
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Map legend -->
+  <div class="map-legend">
+    <span class="legend-item planned">
+      <span class="legend-line dashed"></span>
+      Ruta planificada
+    </span>
+    <span class="legend-item actual">
+      <span class="legend-line solid"></span>
+      Recorrido real
+    </span>
+    <span class="legend-item deviation-marker">
+      <span class="legend-dot"></span>
+      Punto de desvío
+    </span>
+  </div>
+
+  <!-- Map container -->
+  <div class="map-body">
+    @if (loading()) {
+      <div class="map-loading">Cargando historial...</div>
+    }
+    <div #mapContainer class="map-container"></div>
+  </div>
+
+</div>

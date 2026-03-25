@@ -1,0 +1,140 @@
+.history-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.history-toolbar {
+  flex-shrink: 0;
+}
+
+.trip-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.trip-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.trip-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+// Stats row
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  min-width: 110px;
+
+  &.deviation {
+    border-color: #fca5a5;
+    background: #fff5f5;
+  }
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 2px;
+}
+
+// Map legend
+.map-legend {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: #374151;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 28px;
+  height: 3px;
+
+  &.dashed {
+    background: repeating-linear-gradient(
+      to right,
+      #3b82f6 0,
+      #3b82f6 6px,
+      transparent 6px,
+      transparent 10px
+    );
+  }
+
+  &.solid {
+    background: #16a34a;
+  }
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+// Map body
+.map-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.75);
+  z-index: 1000;
+  font-size: 1rem;
+  color: #6b7280;
+}

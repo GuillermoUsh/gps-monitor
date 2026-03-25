@@ -84,6 +84,14 @@
                 (onClick)="goToSimulator(trip.id)"
               />
             }
+            <p-button
+              label="Ver historial"
+              icon="pi pi-map"
+              severity="secondary"
+              size="small"
+              [text]="true"
+              (onClick)="goToHistory(trip.id)"
+            />
           </div>
         </td>
       </tr>

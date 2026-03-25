@@ -158,6 +158,10 @@ export class TripListComponent implements OnInit {
     this.router.navigate(['/simulator', tripId]);
   }
 
+  goToHistory(tripId: string): void {
+    this.router.navigate(['/trips', tripId, 'history']);
+  }
+
   getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case 'active': return 'success';

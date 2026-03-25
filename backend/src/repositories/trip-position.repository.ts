@@ -71,4 +71,39 @@ export class TripPositionRepository extends BaseRepository {
       [id, isDeviation, deviationMeters],
     );
   }
+
+  async findByTripId(tripId: string): Promise<Array<{
+    id: string;
+    lat: number;
+    lng: number;
+    speedKmh: number | null;
+    isDeviation: boolean;
+    deviationMeters: number;
+    recordedAt: Date;
+  }>> {
+    const rows = await this.query<{
+      id: string;
+      lat: number;
+      lng: number;
+      speed_kmh: number | null;
+      is_deviation: boolean;
+      deviation_meters: number;
+      recorded_at: Date;
+    }>(
+      `SELECT id, lat, lng, speed_kmh, is_deviation, deviation_meters, recorded_at
+       FROM trip_positions
+       WHERE trip_id = $1
+       ORDER BY recorded_at ASC`,
+      [tripId],
+    );
+    return rows.map(r => ({
+      id:              r.id,
+      lat:             r.lat,
+      lng:             r.lng,
+      speedKmh:        r.speed_kmh,
+      isDeviation:     r.is_deviation,
+      deviationMeters: r.deviation_meters,
+      recordedAt:      r.recorded_at,
+    }));
+  }
 }
