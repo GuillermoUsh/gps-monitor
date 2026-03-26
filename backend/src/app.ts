@@ -53,6 +53,15 @@ export function createApp(): express.Application {
 
   // Serve Angular frontend (production only)
   const publicDir = path.join(__dirname, '../public');
+  // Service worker and manifest must never be cached so browsers pick up new deploys
+  app.get('/ngsw-worker.js', (_req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(publicDir, 'ngsw-worker.js'));
+  });
+  app.get('/ngsw.json', (_req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(publicDir, 'ngsw.json'));
+  });
   app.use(express.static(publicDir));
   app.get('*', (_req, res) => {
     res.sendFile(path.join(publicDir, 'index.html'));
