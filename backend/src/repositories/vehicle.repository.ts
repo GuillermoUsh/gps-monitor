@@ -6,6 +6,7 @@ interface CreateVehicleData {
   modelo: string;
   anio?: number | null;
   patente: string;
+  alias?: string | null;
   vin?: string | null;
   numero_motor?: string | null;
   tipo?: string | null;
@@ -57,14 +58,15 @@ export class VehicleRepository extends BaseRepository {
 
   async create(data: CreateVehicleData): Promise<VehicleRow> {
     const rows = await this.query<VehicleRow>(
-      `INSERT INTO vehicles (marca, modelo, anio, patente, vin, numero_motor, tipo, color, capacidad_pasajeros, estado, kilometraje, notas)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO vehicles (marca, modelo, anio, patente, alias, vin, numero_motor, tipo, color, capacidad_pasajeros, estado, kilometraje, notas)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
       [
         data.marca,
         data.modelo,
         data.anio ?? null,
         data.patente,
+        data.alias ?? null,
         data.vin ?? null,
         data.numero_motor ?? null,
         data.tipo ?? null,

@@ -59,6 +59,7 @@ export class VehiclesPage implements OnInit {
   editingId: string | null = null;
 
   // Form fields
+  formAlias = '';
   formMarca = '';
   formModelo = '';
   formAnio: number | null = null;
@@ -125,6 +126,7 @@ export class VehiclesPage implements OnInit {
 
   openEditDialog(vehicle: VehicleDto): void {
     this.editingId = vehicle.id;
+    this.formAlias = vehicle.alias ?? '';
     this.formMarca = vehicle.marca;
     this.formModelo = vehicle.modelo;
     this.formAnio = vehicle.anio;
@@ -143,6 +145,7 @@ export class VehiclesPage implements OnInit {
     if (!this.formMarca || !this.formModelo || !this.formPatente) return;
 
     const payload: Partial<VehicleDto> = {
+      alias: this.formAlias || null,
       marca: this.formMarca,
       modelo: this.formModelo,
       anio: this.formAnio,
@@ -230,6 +233,7 @@ export class VehiclesPage implements OnInit {
   }
 
   private resetForm(): void {
+    this.formAlias = '';
     this.formMarca = '';
     this.formModelo = '';
     this.formAnio = null;

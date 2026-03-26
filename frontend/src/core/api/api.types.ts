@@ -47,6 +47,7 @@ export interface VehicleDto {
   modelo: string;
   anio: number | null;
   patente: string;
+  alias: string | null;
   vin: string | null;
   tipo: string | null;
   color: string | null;

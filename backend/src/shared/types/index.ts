@@ -191,7 +191,7 @@ export interface SocketData {
 
 export interface VehicleRow {
   id: string; marca: string; modelo: string; anio: number | null;
-  patente: string; vin: string | null; numero_motor: string | null;
+  patente: string; alias: string | null; vin: string | null; numero_motor: string | null;
   tipo: string | null; color: string | null; capacidad_pasajeros: number | null;
   estado: string; kilometraje: number; notas: string | null;
   created_at: Date; updated_at: Date;

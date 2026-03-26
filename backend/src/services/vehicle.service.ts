@@ -25,6 +25,7 @@ export const VehicleService = {
     modelo: string;
     patente: string;
     anio?: number | null;
+    alias?: string | null;
     vin?: string | null;
     numero_motor?: string | null;
     tipo?: string | null;
@@ -43,6 +44,7 @@ export const VehicleService = {
     modelo?: string;
     patente?: string;
     anio?: number | null;
+    alias?: string | null;
     vin?: string | null;
     numero_motor?: string | null;
     tipo?: string | null;
