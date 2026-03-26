@@ -1,7 +1,7 @@
 import { BaseRepository } from './base.repository';
 import { DriverProfileRow } from '../shared/types';
 
-interface DriverProfileWithEmail extends DriverProfileRow {
+export interface DriverProfileWithEmail extends DriverProfileRow {
   email: string;
 }
 

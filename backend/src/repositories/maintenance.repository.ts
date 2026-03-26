@@ -11,7 +11,7 @@ interface CreateMaintenanceData {
   proximo_service_fecha?: string | null;
 }
 
-interface PendingServiceRow extends MaintenanceRow {
+export interface PendingServiceRow extends MaintenanceRow {
   vehicle_patente: string;
   vehicle_marca:   string;
   vehicle_modelo:  string;

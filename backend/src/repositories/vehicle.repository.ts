@@ -18,7 +18,7 @@ interface CreateVehicleData {
 
 interface UpdateVehicleData extends Partial<CreateVehicleData> {}
 
-interface EstadoCount {
+export interface EstadoCount {
   disponible:        number;
   en_uso:            number;
   en_mantenimiento:  number;

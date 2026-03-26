@@ -14,7 +14,7 @@ interface UpdateDocumentData {
   fecha_vencimiento?: string;
 }
 
-interface ExpiringDocumentRow extends VehicleDocumentRow {
+export interface ExpiringDocumentRow extends VehicleDocumentRow {
   vehicle_patente: string;
   vehicle_marca:   string;
   vehicle_modelo:  string;
