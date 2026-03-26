@@ -8,6 +8,7 @@ import authRouter from './routes/auth.routes';
 import routesRouter from './routes/routes.routes';
 import tripsRouter from './routes/trips.routes';
 import usersRouter from './routes/users.routes';
+import fleetRouter from './routes/fleet.routes';
 
 export function createApp(): express.Application {
   const app = express();
@@ -45,6 +46,7 @@ export function createApp(): express.Application {
   app.use('/routes', routesRouter);
   app.use('/trips',  tripsRouter);
   app.use('/users',  usersRouter);
+  app.use('/fleet',  fleetRouter);
 
   // Global error handler (must be before static fallback)
   app.use(errorHandler);

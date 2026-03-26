@@ -186,3 +186,35 @@ export interface SocketData {
   userId: string;
   role:   UserRole;
 }
+
+// ── Fleet Management — DB Row types ──────────────────────────────────────────
+
+export interface VehicleRow {
+  id: string; marca: string; modelo: string; anio: number | null;
+  patente: string; vin: string | null; numero_motor: string | null;
+  tipo: string | null; color: string | null; capacidad_pasajeros: number | null;
+  estado: string; kilometraje: number; notas: string | null;
+  created_at: Date; updated_at: Date;
+}
+
+export interface DriverProfileRow {
+  id: string; user_id: string; licencia: string;
+  vencimiento_licencia: Date | null; telefono: string | null;
+  created_at: Date; updated_at: Date;
+}
+
+export interface VehicleDocumentRow {
+  id: string; vehicle_id: string; tipo: string; descripcion: string | null;
+  fecha_vencimiento: Date; created_at: Date; updated_at: Date;
+}
+
+export interface MaintenanceRow {
+  id: string; vehicle_id: string; tipo: string; descripcion: string | null;
+  fecha: Date; kilometraje: number | null; proximo_service_km: number | null;
+  proximo_service_fecha: Date | null; created_at: Date;
+}
+
+export interface VehicleAssignmentRow {
+  id: string; vehicle_id: string; driver_id: string;
+  assigned_at: Date; unassigned_at: Date | null; notes: string | null;
+}

@@ -1,0 +1,124 @@
+<div class="drivers-layout">
+  <p-toast />
+
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        routerLink="/fleet"
+        class="mr-2"
+      />
+      <span class="text-lg font-bold">Choferes</span>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="table-wrapper">
+    <p-table
+      [value]="drivers()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="20"
+      emptyMessage="Sin choferes registrados"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Email</th>
+          <th>N° Licencia</th>
+          <th>Vencimiento licencia</th>
+          <th>Teléfono</th>
+          <th style="width: 6rem">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-driver>
+        <tr>
+          <td>{{ driver.email }}</td>
+          <td>{{ driver.licencia || '—' }}</td>
+          <td>
+            <p-tag
+              [value]="getLicenciaLabel(driver.vencimiento_licencia)"
+              [severity]="getLicenciaSeverity(driver.vencimiento_licencia)"
+            />
+          </td>
+          <td>{{ driver.telefono || '—' }}</td>
+          <td>
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              size="small"
+              (onClick)="openEditDialog(driver)"
+              pTooltip="Editar perfil"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Edit dialog -->
+  <p-dialog
+    header="Editar perfil de chofer"
+    [visible]="showDialog()"
+    (visibleChange)="showDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+    [draggable]="false"
+  >
+    <div class="dialog-body">
+      <div class="field">
+        <label class="text-sm font-medium text-gray-500">Chofer</label>
+        <p class="font-semibold">{{ editingEmail }}</p>
+      </div>
+
+      <div class="field">
+        <label for="licencia">N° de licencia</label>
+        <input
+          id="licencia"
+          pInputText
+          [(ngModel)]="formLicencia"
+          placeholder="Ej: 12345678"
+        />
+      </div>
+
+      <div class="field">
+        <label for="vencimiento">Vencimiento de licencia</label>
+        <p-datepicker
+          inputId="vencimiento"
+          [(ngModel)]="formVencimiento"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          appendTo="body"
+        />
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input
+          id="telefono"
+          pInputText
+          [(ngModel)]="formTelefono"
+          placeholder="+54 9 11 1234-5678"
+        />
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [text]="true"
+        (onClick)="showDialog.set(false)"
+      />
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [loading]="saving()"
+        (onClick)="saveDriver()"
+      />
+    </ng-template>
+  </p-dialog>
+
+</div>

@@ -1,0 +1,141 @@
+.fleet-dashboard-layout {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 0;
+}
+
+// Stat cards grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border-left: 4px solid transparent;
+
+  &__icon {
+    font-size: 2rem;
+    opacity: 0.85;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &--green {
+    border-left-color: #22c55e;
+    .stat-card__icon { color: #22c55e; }
+    .stat-card__value { color: #166534; }
+  }
+
+  &--blue {
+    border-left-color: #3b82f6;
+    .stat-card__icon { color: #3b82f6; }
+    .stat-card__value { color: #1e3a5f; }
+  }
+
+  &--orange {
+    border-left-color: #f97316;
+    .stat-card__icon { color: #f97316; }
+    .stat-card__value { color: #7c2d12; }
+  }
+
+  &--red {
+    border-left-color: #ef4444;
+    .stat-card__icon { color: #ef4444; }
+    .stat-card__value { color: #7f1d1d; }
+  }
+}
+
+// Alerts
+.alerts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.25rem;
+}
+
+.alert-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.empty-text {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  padding: 0.5rem 0;
+}
+
+.alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}

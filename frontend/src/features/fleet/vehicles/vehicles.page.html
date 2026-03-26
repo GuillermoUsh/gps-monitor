@@ -1,0 +1,236 @@
+<div class="vehicles-layout">
+  <p-toast />
+  <p-confirmDialog />
+
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        routerLink="/fleet"
+        class="mr-2"
+      />
+      <span class="text-lg font-bold">Vehículos</span>
+    </ng-template>
+    <ng-template #end>
+      <p-button
+        label="Nuevo vehículo"
+        icon="pi pi-plus"
+        (onClick)="openCreateDialog()"
+      />
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <input
+      pInputText
+      type="text"
+      placeholder="Buscar por patente, marca o modelo..."
+      [(ngModel)]="filterSearch"
+      (keyup.enter)="loadVehicles()"
+      class="filter-search"
+    />
+    <p-select
+      [options]="estadoOptions"
+      [(ngModel)]="filterEstado"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Estado"
+      (onChange)="loadVehicles()"
+      appendTo="body"
+      class="filter-estado"
+    />
+    <p-button
+      icon="pi pi-search"
+      severity="secondary"
+      (onClick)="loadVehicles()"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <p-table
+      [value]="vehicles()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="20"
+      emptyMessage="Sin vehículos"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Patente</th>
+          <th>Marca / Modelo</th>
+          <th>Año</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Km</th>
+          <th>Conductor</th>
+          <th style="width: 9rem">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-v>
+        <tr>
+          <td class="font-semibold">{{ v.patente }}</td>
+          <td>{{ v.marca }} {{ v.modelo }}</td>
+          <td>{{ v.anio ?? '—' }}</td>
+          <td>{{ v.tipo ?? '—' }}</td>
+          <td>
+            <p-tag
+              [value]="getEstadoLabel(v.estado)"
+              [severity]="getEstadoSeverity(v.estado)"
+            />
+          </td>
+          <td>{{ v.kilometraje | number }} km</td>
+          <td>
+            @if (v.currentDriver) {
+              <span class="text-sm">{{ v.currentDriver.email }}</span>
+            } @else {
+              <span class="text-gray-400 text-sm">Sin asignar</span>
+            }
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-eye"
+                severity="info"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                [routerLink]="['/fleet/vehicles', v.id]"
+                pTooltip="Ver detalle"
+              />
+              <p-button
+                icon="pi pi-pencil"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                (onClick)="openEditDialog(v)"
+                pTooltip="Editar"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                (onClick)="confirmDelete(v)"
+                pTooltip="Eliminar"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Create/Edit dialog -->
+  <p-dialog
+    [header]="dialogTitle"
+    [visible]="showDialog()"
+    (visibleChange)="showDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '36rem' }"
+    [draggable]="false"
+  >
+    <div class="dialog-body">
+      <div class="form-row">
+        <div class="field">
+          <label for="marca">Marca *</label>
+          <input id="marca" pInputText [(ngModel)]="formMarca" placeholder="Mercedes" />
+        </div>
+        <div class="field">
+          <label for="modelo">Modelo *</label>
+          <input id="modelo" pInputText [(ngModel)]="formModelo" placeholder="Sprinter" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="patente">Patente *</label>
+          <input id="patente" pInputText [(ngModel)]="formPatente" placeholder="AB123CD" />
+        </div>
+        <div class="field">
+          <label for="anio">Año</label>
+          <p-inputnumber id="anio" [(ngModel)]="formAnio" [useGrouping]="false" placeholder="2022" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="tipo">Tipo</label>
+          <p-select
+            inputId="tipo"
+            [options]="tipoOptions"
+            [(ngModel)]="formTipo"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccioná tipo"
+            appendTo="body"
+          />
+        </div>
+        <div class="field">
+          <label for="color">Color</label>
+          <input id="color" pInputText [(ngModel)]="formColor" placeholder="Blanco" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="vin">VIN</label>
+          <input id="vin" pInputText [(ngModel)]="formVin" placeholder="1HGCM82633A..." />
+        </div>
+        <div class="field">
+          <label for="capacidad">Capacidad pasajeros</label>
+          <p-inputnumber id="capacidad" [(ngModel)]="formCapacidad" [min]="1" [max]="100" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="estado">Estado</label>
+          <p-select
+            inputId="estado"
+            [options]="estadoFormOptions"
+            [(ngModel)]="formEstado"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+          />
+        </div>
+        <div class="field">
+          <label for="km">Kilometraje</label>
+          <p-inputnumber id="km" [(ngModel)]="formKilometraje" [min]="0" suffix=" km" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notas">Notas</label>
+        <textarea
+          id="notas"
+          pTextarea
+          [(ngModel)]="formNotas"
+          rows="3"
+          placeholder="Observaciones adicionales..."
+        ></textarea>
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [text]="true"
+        (onClick)="showDialog.set(false)"
+      />
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [loading]="saving()"
+        (onClick)="saveVehicle()"
+      />
+    </ng-template>
+  </p-dialog>
+</div>

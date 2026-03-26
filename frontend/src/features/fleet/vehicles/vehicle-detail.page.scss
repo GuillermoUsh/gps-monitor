@@ -1,0 +1,137 @@
+.detail-layout {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.content {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.top-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+
+  &--full {
+    grid-column: span 2;
+  }
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.info-value {
+  font-size: 0.9375rem;
+  color: #1f2937;
+}
+
+.driver-assigned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.driver-info {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.driver-unassigned {
+  .assign-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .assign-select {
+    flex: 1;
+  }
+}
+
+.tab-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 0.5rem 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  input,
+  p-select,
+  p-inputnumber,
+  p-datepicker {
+    width: 100%;
+  }
+}

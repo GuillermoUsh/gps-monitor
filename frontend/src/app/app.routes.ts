@@ -64,6 +64,12 @@ export const routes: Routes = [
       import('../features/driver/driver.page').then((m) => m.DriverPage),
   },
   {
+    path: 'fleet',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('../features/fleet/fleet.routes').then(m => m.FLEET_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

@@ -1,0 +1,148 @@
+<div class="fleet-dashboard-layout">
+  <p-toast />
+
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        routerLink="/dashboard"
+        class="mr-2"
+      />
+      <span class="text-lg font-bold">Flota — Dashboard</span>
+    </ng-template>
+    <ng-template #end>
+      <p-button
+        label="Vehículos"
+        icon="pi pi-car"
+        severity="secondary"
+        [text]="true"
+        routerLink="/fleet/vehicles"
+        class="mr-2"
+      />
+      <p-button
+        label="Choferes"
+        icon="pi pi-users"
+        severity="secondary"
+        [text]="true"
+        routerLink="/fleet/drivers"
+      />
+    </ng-template>
+  </p-toolbar>
+
+  <div class="content">
+
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
+        <p class="text-gray-500 mt-3">Cargando dashboard...</p>
+      </div>
+    }
+
+    @if (!loading() && dashboard()) {
+      <!-- Stat cards -->
+      <div class="stats-grid">
+
+        <div class="stat-card stat-card--green">
+          <div class="stat-card__icon">
+            <i class="pi pi-check-circle"></i>
+          </div>
+          <div class="stat-card__body">
+            <span class="stat-card__label">Disponibles</span>
+            <span class="stat-card__value">{{ dashboard()!.countsByEstado.disponible }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--blue">
+          <div class="stat-card__icon">
+            <i class="pi pi-car"></i>
+          </div>
+          <div class="stat-card__body">
+            <span class="stat-card__label">En uso</span>
+            <span class="stat-card__value">{{ dashboard()!.countsByEstado.en_uso }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--orange">
+          <div class="stat-card__icon">
+            <i class="pi pi-wrench"></i>
+          </div>
+          <div class="stat-card__body">
+            <span class="stat-card__label">En mantenimiento</span>
+            <span class="stat-card__value">{{ dashboard()!.countsByEstado.en_mantenimiento }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--red">
+          <div class="stat-card__icon">
+            <i class="pi pi-times-circle"></i>
+          </div>
+          <div class="stat-card__body">
+            <span class="stat-card__label">Fuera de servicio</span>
+            <span class="stat-card__value">{{ dashboard()!.countsByEstado.fuera_de_servicio }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Alerts section -->
+      <div class="alerts-section">
+
+        <!-- Expiring documents -->
+        <div class="alert-card">
+          <h3 class="alert-card__title">
+            <i class="pi pi-file-edit mr-2 text-orange-500"></i>
+            Documentos por vencer
+          </h3>
+
+          @if (dashboard()!.expiringDocuments.length === 0) {
+            <p class="empty-text">Sin documentos próximos a vencer.</p>
+          } @else {
+            <ul class="alert-list">
+              @for (doc of dashboard()!.expiringDocuments; track doc.vehicleId + doc.tipo) {
+                <li class="alert-item">
+                  <div class="alert-item__info">
+                    <span class="font-semibold">{{ doc.patente }}</span>
+                    <span class="text-gray-600 ml-2">{{ doc.tipo }}</span>
+                    <span class="text-gray-400 text-sm ml-2">· vence {{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <p-tag
+                    [value]="doc.diasRestantes + ' días'"
+                    [severity]="getDocSeverity(doc.diasRestantes)"
+                  />
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- Pending maintenances -->
+        <div class="alert-card">
+          <h3 class="alert-card__title">
+            <i class="pi pi-wrench mr-2 text-blue-500"></i>
+            Mantenimientos pendientes
+          </h3>
+
+          @if (dashboard()!.pendingMaintenances.length === 0) {
+            <p class="empty-text">Sin mantenimientos pendientes.</p>
+          } @else {
+            <ul class="alert-list">
+              @for (m of dashboard()!.pendingMaintenances; track m.vehicleId + m.tipo) {
+                <li class="alert-item">
+                  <div class="alert-item__info">
+                    <span class="font-semibold">{{ m.patente }}</span>
+                    <span class="text-gray-600 ml-2">{{ m.tipo }}</span>
+                  </div>
+                  <p-tag value="Pendiente" severity="warn" />
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

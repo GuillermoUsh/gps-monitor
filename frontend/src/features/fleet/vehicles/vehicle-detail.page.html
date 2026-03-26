@@ -1,0 +1,355 @@
+<div class="detail-layout">
+  <p-toast />
+
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        routerLink="/fleet/vehicles"
+        class="mr-2"
+      />
+      @if (vehicle()) {
+        <span class="text-lg font-bold">{{ vehicle()!.patente }} — {{ vehicle()!.marca }} {{ vehicle()!.modelo }}</span>
+      } @else {
+        <span class="text-lg font-bold">Detalle de vehículo</span>
+      }
+    </ng-template>
+    <ng-template #end>
+      @if (vehicle()) {
+        <p-tag
+          [value]="getEstadoLabel(vehicle()!.estado)"
+          [severity]="getEstadoSeverity(vehicle()!.estado)"
+        />
+      }
+    </ng-template>
+  </p-toolbar>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
+    </div>
+  }
+
+  @if (!loading() && vehicle()) {
+    <div class="content">
+
+      <!-- Info + Assignment -->
+      <div class="top-section">
+
+        <!-- Vehicle info card -->
+        <div class="info-card">
+          <h3 class="section-title">Información del vehículo</h3>
+          <div class="info-grid">
+            <div class="info-row">
+              <span class="info-label">Patente</span>
+              <span class="info-value font-semibold">{{ vehicle()!.patente }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Marca</span>
+              <span class="info-value">{{ vehicle()!.marca }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Modelo</span>
+              <span class="info-value">{{ vehicle()!.modelo }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Año</span>
+              <span class="info-value">{{ vehicle()!.anio ?? '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">VIN</span>
+              <span class="info-value">{{ vehicle()!.vin ?? '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tipo</span>
+              <span class="info-value">{{ vehicle()!.tipo ?? '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Color</span>
+              <span class="info-value">{{ vehicle()!.color ?? '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Capacidad</span>
+              <span class="info-value">{{ vehicle()!.capacidad_pasajeros ?? '—' }} pasajeros</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Kilometraje</span>
+              <span class="info-value">{{ vehicle()!.kilometraje | number }} km</span>
+            </div>
+            @if (vehicle()!.notas) {
+              <div class="info-row info-row--full">
+                <span class="info-label">Notas</span>
+                <span class="info-value">{{ vehicle()!.notas }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Driver assignment card -->
+        <div class="info-card">
+          <h3 class="section-title">Conductor asignado</h3>
+
+          @if (vehicle()!.currentDriver) {
+            <div class="driver-assigned">
+              <div class="driver-info">
+                <i class="pi pi-user text-2xl text-blue-500"></i>
+                <div>
+                  <p class="font-semibold">{{ vehicle()!.currentDriver!.email }}</p>
+                  <p class="text-sm text-gray-500">Conductor activo</p>
+                </div>
+              </div>
+              <p-button
+                label="Desasignar"
+                icon="pi pi-user-minus"
+                severity="secondary"
+                [loading]="assigning()"
+                (onClick)="unassignDriver()"
+              />
+            </div>
+          } @else {
+            <div class="driver-unassigned">
+              <p class="text-gray-500 text-sm mb-3">Sin conductor asignado</p>
+              <div class="assign-row">
+                <p-select
+                  [options]="driverOptions"
+                  [(ngModel)]="selectedDriverId"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccioná conductor"
+                  appendTo="body"
+                  class="assign-select"
+                />
+                <p-button
+                  label="Asignar"
+                  icon="pi pi-user-plus"
+                  [loading]="assigning()"
+                  [disabled]="!selectedDriverId"
+                  (onClick)="assignDriver()"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Tabs: Documents and Maintenance -->
+      <p-tabs value="documents">
+        <p-tablist>
+          <p-tab value="documents">
+            <i class="pi pi-file mr-2"></i>Documentación
+          </p-tab>
+          <p-tab value="maintenance">
+            <i class="pi pi-wrench mr-2"></i>Mantenimiento
+          </p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+
+          <!-- Documents panel -->
+          <p-tabpanel value="documents">
+            <div class="tab-panel-header">
+              <h4 class="text-base font-semibold">Documentos del vehículo</h4>
+              <p-button
+                label="Agregar documento"
+                icon="pi pi-plus"
+                size="small"
+                (onClick)="openDocDialog()"
+              />
+            </div>
+
+            <p-table
+              [value]="documents()"
+              emptyMessage="Sin documentos registrados"
+              [paginator]="documents().length > 10"
+              [rows]="10"
+            >
+              <ng-template #header>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Vencimiento</th>
+                  <th>Días restantes</th>
+                  <th style="width: 5rem">Acc.</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-doc>
+                <tr>
+                  <td>{{ doc.tipo }}</td>
+                  <td>{{ doc.descripcion ?? '—' }}</td>
+                  <td>{{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    @if (doc.diasRestantes !== undefined) {
+                      <p-tag
+                        [value]="doc.diasRestantes + ' días'"
+                        [severity]="getDocSeverity(doc.diasRestantes)"
+                      />
+                    } @else {
+                      <span class="text-gray-400">—</span>
+                    }
+                  </td>
+                  <td>
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      size="small"
+                      (onClick)="deleteDocument(doc.id)"
+                    />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </p-tabpanel>
+
+          <!-- Maintenance panel -->
+          <p-tabpanel value="maintenance">
+            <div class="tab-panel-header">
+              <h4 class="text-base font-semibold">Historial de mantenimiento</h4>
+              <p-button
+                label="Registrar mantenimiento"
+                icon="pi pi-plus"
+                size="small"
+                (onClick)="openMaintDialog()"
+              />
+            </div>
+
+            <p-table
+              [value]="maintenances()"
+              emptyMessage="Sin mantenimientos registrados"
+              [paginator]="maintenances().length > 10"
+              [rows]="10"
+            >
+              <ng-template #header>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Fecha</th>
+                  <th>Km</th>
+                  <th>Próximo km</th>
+                  <th>Próxima fecha</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-m>
+                <tr>
+                  <td>{{ m.tipo }}</td>
+                  <td>{{ m.descripcion ?? '—' }}</td>
+                  <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ m.kilometraje !== null ? (m.kilometraje | number) + ' km' : '—' }}</td>
+                  <td>{{ m.proximo_service_km !== null ? (m.proximo_service_km | number) + ' km' : '—' }}</td>
+                  <td>{{ m.proximo_service_fecha ? (m.proximo_service_fecha | date:'dd/MM/yyyy') : '—' }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+
+    </div>
+  }
+
+  <!-- Document dialog -->
+  <p-dialog
+    header="Agregar documento"
+    [visible]="showDocDialog()"
+    (visibleChange)="showDocDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '30rem' }"
+    [draggable]="false"
+  >
+    <div class="dialog-body">
+      <div class="field">
+        <label for="docTipo">Tipo *</label>
+        <p-select
+          inputId="docTipo"
+          [options]="docTipoOptions"
+          [(ngModel)]="docTipo"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccioná tipo"
+          appendTo="body"
+        />
+      </div>
+      <div class="field">
+        <label for="docDesc">Descripción</label>
+        <input id="docDesc" pInputText [(ngModel)]="docDescripcion" placeholder="Opcional" />
+      </div>
+      <div class="field">
+        <label for="docVenc">Fecha de vencimiento *</label>
+        <p-datepicker
+          inputId="docVenc"
+          [(ngModel)]="docFechaVencimiento"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          appendTo="body"
+        />
+      </div>
+    </div>
+    <ng-template #footer>
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showDocDialog.set(false)" />
+      <p-button label="Guardar" icon="pi pi-check" [loading]="savingDoc()" (onClick)="saveDocument()" />
+    </ng-template>
+  </p-dialog>
+
+  <!-- Maintenance dialog -->
+  <p-dialog
+    header="Registrar mantenimiento"
+    [visible]="showMaintDialog()"
+    (visibleChange)="showMaintDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '34rem' }"
+    [draggable]="false"
+  >
+    <div class="dialog-body">
+      <div class="field">
+        <label for="maintTipo">Tipo *</label>
+        <input id="maintTipo" pInputText [(ngModel)]="maintTipo" placeholder="Ej: cambio de aceite" />
+      </div>
+      <div class="field">
+        <label for="maintDesc">Descripción</label>
+        <input id="maintDesc" pInputText [(ngModel)]="maintDescripcion" placeholder="Opcional" />
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="maintFecha">Fecha *</label>
+          <p-datepicker
+            inputId="maintFecha"
+            [(ngModel)]="maintFecha"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+          />
+        </div>
+        <div class="field">
+          <label for="maintKm">Kilometraje al momento</label>
+          <p-inputnumber id="maintKm" [(ngModel)]="maintKilometraje" suffix=" km" [min]="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="maintProxKm">Próximo service (km)</label>
+          <p-inputnumber id="maintProxKm" [(ngModel)]="maintProximoKm" suffix=" km" [min]="0" />
+        </div>
+        <div class="field">
+          <label for="maintProxFecha">Próxima fecha service</label>
+          <p-datepicker
+            inputId="maintProxFecha"
+            [(ngModel)]="maintProximoFecha"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+          />
+        </div>
+      </div>
+    </div>
+    <ng-template #footer>
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showMaintDialog.set(false)" />
+      <p-button label="Guardar" icon="pi pi-check" [loading]="savingMaint()" (onClick)="saveMaintenance()" />
+    </ng-template>
+  </p-dialog>
+
+</div>
