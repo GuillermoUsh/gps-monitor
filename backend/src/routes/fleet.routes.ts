@@ -8,6 +8,8 @@ import { VehicleController }         from '../controllers/vehicle.controller';
 import { DriverProfileController }   from '../controllers/driver-profile.controller';
 import { VehicleDocumentController } from '../controllers/vehicle-document.controller';
 import { MaintenanceController }     from '../controllers/maintenance.controller';
+import { AlertController }           from '../controllers/alert.controller';
+import { DriverDocumentController }  from '../controllers/driver-document.controller';
 
 const router = Router();
 
@@ -59,11 +61,36 @@ const assignSchema = z.object({
 
 // ── Driver profile schemas ────────────────────────────────────────────────────
 
+const createDriverProfileSchema = z.object({
+  body: z.object({
+    nombre:               z.string().min(1),
+    apellido:             z.string().min(1),
+    email:                z.string().email(),
+    telefono:             z.string().optional().nullable(),
+    licencia:             z.string().optional().nullable(),
+    vencimiento_licencia: z.string().optional().nullable(),
+  }),
+});
+
 const upsertDriverProfileSchema = z.object({
   body: z.object({
-    licencia:             z.string().min(1),
+    licencia:             z.string().min(1).optional().nullable(),
     vencimiento_licencia: z.string().optional().nullable(),
     telefono:             z.string().optional().nullable(),
+    nombre:               z.string().optional().nullable(),
+    apellido:             z.string().optional().nullable(),
+    curso_puerto:         z.boolean().optional(),
+    notas:                z.string().optional().nullable(),
+  }),
+});
+
+// ── Driver document schemas ────────────────────────────────────────────────────
+
+const createDriverDocumentSchema = z.object({
+  body: z.object({
+    tipo:              z.string().min(1),
+    descripcion:       z.string().optional().nullable(),
+    fecha_vencimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)'),
   }),
 });
 
@@ -142,6 +169,13 @@ router.post(
 
 router.get('/drivers', DriverProfileController.list);
 
+router.post(
+  '/drivers',
+  requireRole([USER_ROLE.ADMIN]),
+  validate(createDriverProfileSchema),
+  DriverProfileController.create,
+);
+
 router.put(
   '/drivers/:userId',
   requireRole([USER_ROLE.ADMIN]),
@@ -171,6 +205,27 @@ router.delete(
   '/documents/:id',
   requireRole([USER_ROLE.ADMIN]),
   VehicleDocumentController.delete,
+);
+
+// ── Alert routes ──────────────────────────────────────────────────────────────
+
+router.get('/alerts', AlertController.list);
+
+// ── Driver document routes ────────────────────────────────────────────────────
+
+router.get('/drivers/:driverProfileId/documents', DriverDocumentController.list);
+
+router.post(
+  '/drivers/:driverProfileId/documents',
+  requireRole([USER_ROLE.ADMIN]),
+  validate(createDriverDocumentSchema),
+  DriverDocumentController.create,
+);
+
+router.delete(
+  '/drivers/documents/:docId',
+  requireRole([USER_ROLE.ADMIN]),
+  DriverDocumentController.delete,
 );
 
 // ── Maintenance routes ────────────────────────────────────────────────────────

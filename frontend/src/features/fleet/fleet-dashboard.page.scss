@@ -16,6 +16,67 @@
   padding: 4rem 0;
 }
 
+// Alerts panel (vencimientos)
+.alerts-panel {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+
+  &--danger { background: #fef2f2; border-left: 3px solid #ef4444; }
+  &--warn   { background: #fffbeb; border-left: 3px solid #f59e0b; }
+  &--ok     { background: #f0fdf4; border-left: 3px solid #22c55e; }
+
+  &__entidad {
+    font-weight: 600;
+    min-width: 8rem;
+  }
+
+  &__subtipo {
+    color: #6b7280;
+    flex: 1;
+  }
+
+  &__codigo {
+    color: #9ca3af;
+    font-size: 0.8125rem;
+    font-style: italic;
+  }
+
+  &__dias {
+    font-weight: 600;
+
+    &--danger { color: #ef4444; }
+    &--warn   { color: #d97706; }
+    &--ok     { color: #16a34a; }
+  }
+}
+
 // Stat cards grid
 .stats-grid {
   display: grid;

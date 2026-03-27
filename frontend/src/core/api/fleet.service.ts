@@ -9,6 +9,8 @@ import {
   MaintenanceDto,
   DriverProfileDto,
   FleetDashboardDto,
+  DriverDocumentDto,
+  AlertItemDto,
 } from './api.types';
 
 @Injectable({ providedIn: 'root' })
@@ -114,5 +116,44 @@ export class FleetService {
     return this.http
       .put<{ data: DriverProfileDto }>(`${this.base}/fleet/drivers/${userId}`, data)
       .pipe(map(res => res.data));
+  }
+
+  createDriver(data: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    telefono?: string | null;
+    licencia?: string | null;
+    vencimiento_licencia?: string | null;
+  }): Observable<{ driver: DriverProfileDto; password: string }> {
+    return this.http
+      .post<{ data: { driver: DriverProfileDto; password: string } }>(`${this.base}/fleet/drivers`, data)
+      .pipe(map(r => r.data));
+  }
+
+  // Alerts
+  getAlerts(days = 30): Observable<AlertItemDto[]> {
+    return this.http
+      .get<{ data: AlertItemDto[] }>(`${this.base}/fleet/alerts?days=${days}`)
+      .pipe(map(res => res.data));
+  }
+
+  // Driver documents
+  getDriverDocuments(driverProfileId: string): Observable<DriverDocumentDto[]> {
+    return this.http
+      .get<{ data: DriverDocumentDto[] }>(`${this.base}/fleet/drivers/${driverProfileId}/documents`)
+      .pipe(map(res => res.data));
+  }
+
+  createDriverDocument(driverProfileId: string, data: Partial<DriverDocumentDto>): Observable<DriverDocumentDto> {
+    return this.http
+      .post<{ data: DriverDocumentDto }>(`${this.base}/fleet/drivers/${driverProfileId}/documents`, data)
+      .pipe(map(res => res.data));
+  }
+
+  deleteDriverDocument(docId: string): Observable<void> {
+    return this.http
+      .delete<{ data: null }>(`${this.base}/fleet/drivers/documents/${docId}`)
+      .pipe(map(() => undefined));
   }
 }

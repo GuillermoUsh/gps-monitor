@@ -1,0 +1,1 @@
+ALTER TABLE vehicle_documents ADD COLUMN IF NOT EXISTS codigo VARCHAR(100);

@@ -60,6 +60,7 @@
     >
       <ng-template #header>
         <tr>
+          <th>Alias</th>
           <th>Patente</th>
           <th>Marca / Modelo</th>
           <th>Año</th>
@@ -72,7 +73,8 @@
       </ng-template>
       <ng-template #body let-v>
         <tr>
-          <td class="font-semibold">{{ v.patente }}</td>
+          <td class="font-semibold">{{ v.alias ?? '—' }}</td>
+          <td>{{ v.patente }}</td>
           <td>{{ v.marca }} {{ v.modelo }}</td>
           <td>{{ v.anio ?? '—' }}</td>
           <td>{{ v.tipo ?? '—' }}</td>

@@ -3,6 +3,15 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { DriverProfileService } from '../services/driver-profile.service';
 
 export const DriverProfileController = {
+  async create(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await DriverProfileService.create(req.body);
+      res.status(201).json({ status: 'success', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async list(_req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const profiles = await DriverProfileService.list();

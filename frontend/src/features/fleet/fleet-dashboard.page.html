@@ -41,6 +41,37 @@
     }
 
     @if (!loading() && dashboard()) {
+
+      <!-- Panel de alertas de vencimiento -->
+      @if (alerts().length > 0) {
+        <div class="alerts-panel">
+          <h3 class="alerts-panel__title">
+            <i class="pi pi-exclamation-triangle mr-2 text-orange-500"></i>
+            Vencimientos próximos ({{ alertDays() }} días)
+          </h3>
+          <div class="alerts-panel__list">
+            @for (alert of alerts(); track alert.id) {
+              <div class="alert-row" [class]="'alert-row--' + getSeverity(alert.dias_restantes)">
+                <span class="alert-row__entidad">{{ alert.entidad }}</span>
+                <span class="alert-row__subtipo">{{ labelTipo(alert.subtipo) }}</span>
+                @if (alert.codigo) {
+                  <span class="alert-row__codigo">{{ alert.codigo }}</span>
+                }
+                <span class="alert-row__dias" [class]="'alert-row__dias--' + getSeverity(alert.dias_restantes)">
+                  @if (alert.dias_restantes < 0) {
+                    VENCIDO
+                  } @else if (alert.dias_restantes === 0) {
+                    Vence hoy
+                  } @else {
+                    en {{ alert.dias_restantes }} días
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Stat cards -->
       <div class="stats-grid">
 

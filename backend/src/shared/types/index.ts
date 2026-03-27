@@ -198,23 +198,50 @@ export interface VehicleRow {
 }
 
 export interface DriverProfileRow {
-  id: string; user_id: string; licencia: string;
+  id: string; user_id: string;
+  nombre: string | null; apellido: string | null;
+  licencia: string | null;
   vencimiento_licencia: Date | null; telefono: string | null;
+  curso_puerto: boolean;
+  notas: string | null;
   created_at: Date; updated_at: Date;
 }
 
 export interface VehicleDocumentRow {
   id: string; vehicle_id: string; tipo: string; descripcion: string | null;
+  codigo: string | null;
   fecha_vencimiento: Date; created_at: Date; updated_at: Date;
 }
 
 export interface MaintenanceRow {
   id: string; vehicle_id: string; tipo: string; descripcion: string | null;
-  fecha: Date; kilometraje: number | null; proximo_service_km: number | null;
-  proximo_service_fecha: Date | null; created_at: Date;
+  fecha: Date; kilometraje: number | null;
+  proximo_service_km: number | null; proximo_service_fecha: Date | null;
+  turno_fecha: Date | null; turno_descripcion: string | null;
+  created_at: Date;
 }
 
 export interface VehicleAssignmentRow {
   id: string; vehicle_id: string; driver_id: string;
   assigned_at: Date; unassigned_at: Date | null; notes: string | null;
+}
+
+export interface DriverDocumentRow {
+  id: string;
+  driver_id: string;
+  tipo: string;
+  descripcion: string | null;
+  fecha_vencimiento: Date;
+  created_at: Date;
+}
+
+export interface AlertItem {
+  id: string;
+  tipo: 'vehicle_document' | 'driver_document' | 'turno_mecanico';
+  entidad: string;
+  entidad_id: string;
+  subtipo: string;
+  fecha_vencimiento: Date;
+  dias_restantes: number;
+  codigo?: string | null;
 }

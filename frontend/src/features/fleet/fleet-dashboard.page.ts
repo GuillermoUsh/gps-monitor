@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 
 import { FleetService } from '../../core/api/fleet.service';
 import { FleetDashboardDto } from '../../core/api/api.types';
+import { AlertService } from './alerts/alert.service';
 
 @Component({
   selector: 'app-fleet-dashboard-page',
@@ -34,11 +35,15 @@ import { FleetDashboardDto } from '../../core/api/api.types';
 export class FleetDashboardPage implements OnInit {
   private readonly fleetService = inject(FleetService);
   private readonly messageService = inject(MessageService);
+  private readonly alertService = inject(AlertService);
 
   loading = signal(false);
   dashboard = signal<FleetDashboardDto | null>(null);
+  alerts = this.alertService.alerts;
+  alertDays = this.alertService.alertDays;
 
   ngOnInit(): void {
+    this.alertService.start();
     this.loadDashboard();
   }
 
@@ -62,5 +67,13 @@ export class FleetDashboardPage implements OnInit {
     if (diasRestantes < 7) return 'danger';
     if (diasRestantes < 30) return 'warn';
     return 'success';
+  }
+
+  getSeverity(dias: number): string {
+    return this.alertService.getSeverity(dias);
+  }
+
+  labelTipo(tipo: string): string {
+    return this.alertService.labelTipo(tipo);
   }
 }

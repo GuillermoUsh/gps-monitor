@@ -82,9 +82,33 @@ export interface DriverProfileDto {
   id: string;
   user_id: string;
   email: string;
-  licencia: string;
+  nombre: string | null;
+  apellido: string | null;
+  licencia: string | null;
   vencimiento_licencia: string | null;
   telefono: string | null;
+  curso_puerto: boolean;
+  notas: string | null;
+}
+
+export interface DriverDocumentDto {
+  id: string;
+  driver_id: string;
+  tipo: string;
+  descripcion: string | null;
+  fecha_vencimiento: string;
+  created_at: string;
+}
+
+export interface AlertItemDto {
+  id: string;
+  tipo: 'vehicle_document' | 'driver_document' | 'turno_mecanico';
+  entidad: string;
+  entidad_id: string;
+  subtipo: string;
+  fecha_vencimiento: string;
+  dias_restantes: number;
+  codigo?: string | null;
 }
 
 export interface FleetDashboardDto {
