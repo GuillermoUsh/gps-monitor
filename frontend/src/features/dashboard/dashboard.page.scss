@@ -1,6 +1,7 @@
 .layout {
   min-height: 100vh;
   background: #f1f5f9;
+  overflow-x: hidden;
 }
 
 /* Topbar */
@@ -24,9 +25,11 @@
 
 /* Content */
 .content {
-  padding: 1.25rem;
+  padding: 1rem;
   max-width: 720px;
   margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .greeting {
