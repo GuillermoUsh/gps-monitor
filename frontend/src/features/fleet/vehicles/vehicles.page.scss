@@ -3,21 +3,50 @@
   background: #f8f9fa;
 }
 
+/* Responsive visibility */
+.desktop-only {
+  @media (max-width: 1023px) { display: none; }
+}
+.mobile-only {
+  @media (min-width: 1024px) { display: none; }
+}
+
 .filter-bar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: .875rem 1.25rem;
   background: #fff;
   border-bottom: 1px solid #e2e8f0;
 
-  .filter-search {
-    flex: 1;
-    max-width: 360px;
+  .filter-estado {
+    width: 160px;
+    flex-shrink: 0;
   }
 
-  .filter-estado {
-    width: 200px;
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    .filter-estado { width: 100%; }
+  }
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+
+  .search-icon {
+    position: absolute;
+    left: .75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: .875rem;
+    pointer-events: none;
+  }
+
+  .filter-search {
+    width: 100%;
+    padding-left: 2.25rem !important;
   }
 }
 
@@ -25,6 +54,75 @@
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* Mobile card list */
+.mobile-list {
+  padding: .875rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.vehicle-card {
+  background: #fff;
+  border-radius: .875rem;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .375rem;
+  }
+
+  &__alias {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  &__info {
+    font-size: .875rem;
+    color: #475569;
+    margin-bottom: .375rem;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    font-size: .78rem;
+    color: #94a3b8;
+    margin-bottom: .75rem;
+  }
+
+  &__driver {
+    color: #6366f1;
+    i { font-size: .7rem; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: .5rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: .75rem;
+  }
+}
+
+.mobile-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+  font-size: 1.5rem;
+}
+
+.mobile-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+  font-size: .875rem;
 }
 
 .action-buttons {

@@ -77,6 +77,15 @@ export class VehicleDetailPage implements OnInit {
   docDescripcion = '';
   docFechaVencimiento: Date | null = null;
 
+  // Maintenance detail dialog
+  showMaintDetailDialog = signal(false);
+  selectedMaint = signal<MaintenanceDto | null>(null);
+
+  openMaintDetail(m: MaintenanceDto): void {
+    this.selectedMaint.set(m);
+    this.showMaintDetailDialog.set(true);
+  }
+
   // Maintenance dialog
   showMaintDialog = signal(false);
   savingMaint = signal(false);

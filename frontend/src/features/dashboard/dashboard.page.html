@@ -1,65 +1,170 @@
 <div class="layout">
 
-  <p-toolbar>
-    <ng-template #start>
-      <span class="text-lg font-bold">🗺 GPS Monitor</span>
-    </ng-template>
-    <ng-template #end>
-      <span class="text-sm text-gray-500 mr-4">{{ user()?.email }}</span>
-      <p-button label="Salir" icon="pi pi-sign-out" severity="secondary"
-                [text]="true" (onClick)="logout()" />
-    </ng-template>
-  </p-toolbar>
+  <div class="topbar">
+    <span class="topbar__title">🗺 GPS Monitor</span>
+    <div class="topbar__right">
+      <span class="topbar__email">{{ user()?.email }}</span>
+      <p-button icon="pi pi-sign-out" severity="secondary" [text]="true"
+                size="small" (onClick)="logout()" />
+    </div>
+  </div>
 
   <div class="content">
-    <div class="mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">Bienvenido 👋</h2>
-      <p class="text-gray-500 mt-1">¿Qué querés hacer hoy?</p>
+
+    <div class="greeting">
+      <h2>Bienvenido 👋</h2>
+      <p>Panel de control</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+    <div class="dashboard-grid">
 
-      <div class="nav-card" routerLink="/map">
-        <div class="text-4xl mb-3">🗺</div>
-        <h3 class="text-lg font-semibold">Mapa en vivo</h3>
-        <p class="text-sm text-gray-500 mt-1">Seguí las unidades en tiempo real</p>
+      <!-- Mapa en vivo -->
+      <a class="card card--primary" routerLink="/map">
+        <div class="card__icon">🗺</div>
+        <div class="card__body">
+          <div class="card__title">Mapa en vivo</div>
+          <div class="card__sub">Seguí las unidades en tiempo real</div>
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
+
+      <!-- Viajes -->
+      <a class="card" routerLink="/trips">
+        <div class="card__icon">🚌</div>
+        <div class="card__body">
+          <div class="card__title">Viajes</div>
+          @if (!loading()) {
+            <div class="card__sub">
+              <span class="badge badge--blue">{{ activeTrips() }} activos</span>
+            </div>
+          } @else {
+            <div class="card__sub">Cargando...</div>
+          }
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
+
+      <!-- Vehículos -->
+      <a class="card card--wide" routerLink="/fleet/vehicles">
+        <div class="card__header">
+          <span class="card__icon">🚐</span>
+          <span class="card__title">Vehículos</span>
+          <i class="pi pi-chevron-right card__arrow"></i>
+        </div>
+        @if (fleetDashboard()) {
+          <div class="estado-row">
+            <div class="estado-chip estado-chip--green">
+              <span class="estado-chip__num">{{ fleetDashboard()!.countsByEstado.disponible }}</span>
+              <span class="estado-chip__label">Disponibles</span>
+            </div>
+            <div class="estado-chip estado-chip--blue">
+              <span class="estado-chip__num">{{ fleetDashboard()!.countsByEstado.en_uso }}</span>
+              <span class="estado-chip__label">En uso</span>
+            </div>
+            <div class="estado-chip estado-chip--orange">
+              <span class="estado-chip__num">{{ fleetDashboard()!.countsByEstado.en_mantenimiento }}</span>
+              <span class="estado-chip__label">Mantenim.</span>
+            </div>
+            <div class="estado-chip estado-chip--red">
+              <span class="estado-chip__num">{{ fleetDashboard()!.countsByEstado.fuera_de_servicio }}</span>
+              <span class="estado-chip__label">Fuera serv.</span>
+            </div>
+          </div>
+        }
+      </a>
+
+      <!-- Documentación -->
+      <div class="card card--wide card--alerts">
+        <div class="card__header">
+          <span class="card__icon">📄</span>
+          <span class="card__title">Documentación</span>
+          @if (alerts().length > 0) {
+            <span class="badge badge--red">{{ alerts().length }}</span>
+          }
+        </div>
+        @if (alerts().length === 0) {
+          <p class="card__ok">✅ Sin vencimientos próximos</p>
+        } @else {
+          @for (alert of alerts().slice(0, 4); track alert.id) {
+            <a class="alert-row alert-row--{{ getSeverity(alert.dias_restantes) }}" routerLink="/fleet">
+              <span class="alert-row__entidad">{{ alert.entidad }}</span>
+              <span class="alert-row__tipo">{{ labelTipo(alert.subtipo) }}</span>
+              <span class="alert-row__dias alert-row__dias--{{ getSeverity(alert.dias_restantes) }}">
+                @if (alert.dias_restantes < 0) { VENCIDO }
+                @else if (alert.dias_restantes === 0) { Hoy }
+                @else { {{ alert.dias_restantes }}d }
+              </span>
+            </a>
+          }
+          @if (alerts().length > 4) {
+            <a routerLink="/fleet" class="alert-more">Ver {{ alerts().length - 4 }} más →</a>
+          }
+        }
+
+        @if (fleetDashboard() && fleetDashboard()!.pendingMaintenances.length > 0) {
+          <div class="section-divider"></div>
+          <div class="card__sub mb-1">🔧 Mantenimientos pendientes</div>
+          @for (m of fleetDashboard()!.pendingMaintenances.slice(0, 2); track m.vehicleId) {
+            <a class="alert-row alert-row--warn" routerLink="/fleet/vehicles">
+              <span class="alert-row__entidad">{{ m.patente }}</span>
+              <span class="alert-row__tipo">{{ m.tipo }}</span>
+              <span class="alert-row__dias alert-row__dias--warn">Pendiente</span>
+            </a>
+          }
+        }
       </div>
 
-      <div class="nav-card" routerLink="/trips">
-        <div class="text-4xl mb-3">🚌</div>
-        <h3 class="text-lg font-semibold">Viajes activos</h3>
-        <p class="text-sm text-gray-500 mt-1">Listado de viajes en curso</p>
-      </div>
+      <!-- Choferes -->
+      <a class="card" routerLink="/fleet/drivers">
+        <div class="card__icon">👤</div>
+        <div class="card__body">
+          <div class="card__title">Choferes</div>
+          @if (!loading()) {
+            <div class="card__sub">
+              <span class="badge badge--green">{{ totalDrivers() }} registrados</span>
+            </div>
+          }
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
 
-      <div class="nav-card" routerLink="/routes">
-        <div class="text-4xl mb-3">📍</div>
-        <h3 class="text-lg font-semibold">Rutas</h3>
-        <p class="text-sm text-gray-500 mt-1">Administrá las rutas y waypoints</p>
-      </div>
+      <!-- Rutas -->
+      <a class="card" routerLink="/routes">
+        <div class="card__icon">📍</div>
+        <div class="card__body">
+          <div class="card__title">Rutas</div>
+          @if (!loading()) {
+            <div class="card__sub">
+              <span class="badge badge--gray">{{ totalRoutes() }} configuradas</span>
+            </div>
+          }
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
 
-      <div class="nav-card" routerLink="/simulator">
-        <div class="text-4xl mb-3">📡</div>
-        <h3 class="text-lg font-semibold">Simulador</h3>
-        <p class="text-sm text-gray-500 mt-1">Enviá posiciones GPS manualmente</p>
-      </div>
+      <!-- Usuarios -->
+      <a class="card" routerLink="/users">
+        <div class="card__icon">👥</div>
+        <div class="card__body">
+          <div class="card__title">Usuarios</div>
+          @if (!loading()) {
+            <div class="card__sub">
+              <span class="badge badge--gray">{{ totalUsers() }} activos</span>
+            </div>
+          }
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
 
-      <div class="nav-card" routerLink="/users">
-        <div class="text-4xl mb-3">👥</div>
-        <h3 class="text-lg font-semibold">Usuarios / Choferes</h3>
-        <p class="text-sm text-gray-500 mt-1">Administrá usuarios y roles</p>
-      </div>
-
-      <div class="nav-card" routerLink="/driver">
-        <div class="text-4xl mb-3">🚗</div>
-        <h3 class="text-lg font-semibold">Vista del chofer</h3>
-        <p class="text-sm text-gray-500 mt-1">Panel móvil de seguimiento GPS</p>
-      </div>
-
-      <div class="nav-card" routerLink="/fleet">
-        <div class="text-4xl mb-3">🚐</div>
-        <h3 class="text-lg font-semibold">Flota</h3>
-        <p class="text-sm text-gray-500 mt-1">Vehículos, documentación y mantenimiento</p>
-      </div>
+      <!-- Vista chofer -->
+      <a class="card" routerLink="/driver">
+        <div class="card__icon">🚗</div>
+        <div class="card__body">
+          <div class="card__title">Vista del chofer</div>
+          <div class="card__sub">Panel de tracking GPS</div>
+        </div>
+        <i class="pi pi-chevron-right card__arrow"></i>
+      </a>
 
     </div>
   </div>

@@ -11,7 +11,7 @@
         class="mr-2"
       />
       @if (vehicle()) {
-        <span class="text-lg font-bold">{{ vehicle()!.patente }} — {{ vehicle()!.marca }} {{ vehicle()!.modelo }}</span>
+        <span class="text-lg font-bold">{{ vehicle()!.alias ?? vehicle()!.patente }}</span>
       } @else {
         <span class="text-lg font-bold">Detalle de vehículo</span>
       }
@@ -156,98 +156,138 @@
           <p-tabpanel value="documents">
             <div class="tab-panel-header">
               <h4 class="text-base font-semibold">Documentos del vehículo</h4>
-              <p-button
-                label="Agregar documento"
-                icon="pi pi-plus"
-                size="small"
-                (onClick)="openDocDialog()"
-              />
+              <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openDocDialog()" />
             </div>
 
-            <p-table
-              [value]="documents()"
-              emptyMessage="Sin documentos registrados"
-              [paginator]="documents().length > 10"
-              [rows]="10"
-            >
-              <ng-template #header>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Descripción</th>
-                  <th>Vencimiento</th>
-                  <th>Días restantes</th>
-                  <th style="width: 5rem">Acc.</th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-doc>
-                <tr>
-                  <td>{{ doc.tipo }}</td>
-                  <td>{{ doc.descripcion ?? '—' }}</td>
-                  <td>{{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}</td>
-                  <td>
+            <!-- Desktop table -->
+            <div class="desktop-only">
+              <p-table [value]="documents()" emptyMessage="Sin documentos registrados"
+                [paginator]="documents().length > 10" [rows]="10">
+                <ng-template #header>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Vencimiento</th>
+                    <th>Días restantes</th>
+                    <th style="width: 5rem"></th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-doc>
+                  <tr>
+                    <td>{{ doc.tipo }}</td>
+                    <td>{{ doc.descripcion ?? '—' }}</td>
+                    <td>{{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      @if (doc.diasRestantes !== undefined) {
+                        <p-tag [value]="doc.diasRestantes + ' días'" [severity]="getDocSeverity(doc.diasRestantes)" />
+                      } @else { <span class="text-gray-400">—</span> }
+                    </td>
+                    <td>
+                      <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                        size="small" (onClick)="deleteDocument(doc.id)" />
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <!-- Mobile cards -->
+            <div class="mobile-only item-list">
+              @if (documents().length === 0) {
+                <p class="empty-text">Sin documentos registrados</p>
+              }
+              @for (doc of documents(); track doc.id) {
+                <div class="item-card">
+                  <div class="item-card__header">
+                    <span class="item-card__title">{{ doc.tipo }}</span>
                     @if (doc.diasRestantes !== undefined) {
-                      <p-tag
-                        [value]="doc.diasRestantes + ' días'"
-                        [severity]="getDocSeverity(doc.diasRestantes)"
-                      />
-                    } @else {
-                      <span class="text-gray-400">—</span>
+                      <p-tag [value]="doc.diasRestantes < 0 ? 'VENCIDO' : doc.diasRestantes + ' días'"
+                        [severity]="getDocSeverity(doc.diasRestantes)" />
                     }
-                  </td>
-                  <td>
-                    <p-button
-                      icon="pi pi-trash"
-                      severity="danger"
-                      [text]="true"
-                      [rounded]="true"
-                      size="small"
-                      (onClick)="deleteDocument(doc.id)"
-                    />
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
+                  </div>
+                  @if (doc.descripcion) {
+                    <div class="item-card__sub">{{ doc.descripcion }}</div>
+                  }
+                  <div class="item-card__meta">
+                    <i class="pi pi-calendar"></i> {{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}
+                  </div>
+                  <div class="item-card__actions">
+                    <p-button icon="pi pi-trash" label="Eliminar" severity="danger" [text]="true"
+                      size="small" (onClick)="deleteDocument(doc.id)" />
+                  </div>
+                </div>
+              }
+            </div>
           </p-tabpanel>
 
           <!-- Maintenance panel -->
           <p-tabpanel value="maintenance">
             <div class="tab-panel-header">
               <h4 class="text-base font-semibold">Historial de mantenimiento</h4>
-              <p-button
-                label="Registrar mantenimiento"
-                icon="pi pi-plus"
-                size="small"
-                (onClick)="openMaintDialog()"
-              />
+              <p-button label="Registrar" icon="pi pi-plus" size="small" (onClick)="openMaintDialog()" />
             </div>
 
-            <p-table
-              [value]="maintenances()"
-              emptyMessage="Sin mantenimientos registrados"
-              [paginator]="maintenances().length > 10"
-              [rows]="10"
-            >
-              <ng-template #header>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Descripción</th>
-                  <th>Fecha</th>
-                  <th>Km</th>
-                  <th>Próximo km</th>
-                  <th>Próxima fecha</th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-m>
-                <tr>
-                  <td>{{ m.tipo }}</td>
-                  <td>{{ m.descripcion ?? '—' }}</td>
-                  <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
-                  <td>{{ m.kilometraje !== null ? (m.kilometraje | number) + ' km' : '—' }}</td>
-                  <td>{{ m.proximo_service_km !== null ? (m.proximo_service_km | number) + ' km' : '—' }}</td>
-                  <td>{{ m.proximo_service_fecha ? (m.proximo_service_fecha | date:'dd/MM/yyyy') : '—' }}</td>
-                </tr>
-              </ng-template>
-            </p-table>
+            <!-- Desktop table -->
+            <div class="desktop-only">
+              <p-table [value]="maintenances()" emptyMessage="Sin mantenimientos registrados"
+                [paginator]="maintenances().length > 10" [rows]="10">
+                <ng-template #header>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Km</th>
+                    <th>Próximo km</th>
+                    <th>Próxima fecha</th>
+                    <th style="width: 5rem"></th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-m>
+                  <tr>
+                    <td>{{ m.tipo }}</td>
+                    <td>{{ m.descripcion ?? '—' }}</td>
+                    <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ m.kilometraje !== null ? (m.kilometraje | number) + ' km' : '—' }}</td>
+                    <td>{{ m.proximo_service_km !== null ? (m.proximo_service_km | number) + ' km' : '—' }}</td>
+                    <td>{{ m.proximo_service_fecha ? (m.proximo_service_fecha | date:'dd/MM/yyyy') : '—' }}</td>
+                    <td>
+                      <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                        size="small" (onClick)="openMaintDetail(m)" pTooltip="Ver detalle" />
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <!-- Mobile cards -->
+            <div class="mobile-only item-list">
+              @if (maintenances().length === 0) {
+                <p class="empty-text">Sin mantenimientos registrados</p>
+              }
+              @for (m of maintenances(); track m.id) {
+                <div class="item-card">
+                  <div class="item-card__header">
+                    <span class="item-card__title">{{ m.tipo }}</span>
+                    <span class="item-card__date">{{ m.fecha | date:'dd/MM/yy' }}</span>
+                  </div>
+                  @if (m.descripcion) {
+                    <div class="item-card__sub">{{ m.descripcion }}</div>
+                  }
+                  <div class="item-card__meta">
+                    @if (m.kilometraje !== null) {
+                      <span><i class="pi pi-gauge"></i> {{ m.kilometraje | number }} km</span>
+                    }
+                    @if (m.proximo_service_km !== null) {
+                      <span><i class="pi pi-forward"></i> Próximo: {{ m.proximo_service_km | number }} km</span>
+                    }
+                  </div>
+                  <div class="item-card__actions">
+                    <p-button icon="pi pi-eye" label="Ver detalle" severity="info" [text]="true"
+                      size="small" (onClick)="openMaintDetail(m)" />
+                  </div>
+                </div>
+              }
+            </div>
           </p-tabpanel>
 
         </p-tabpanels>
@@ -255,6 +295,56 @@
 
     </div>
   }
+
+  <!-- Maintenance detail dialog -->
+  <p-dialog
+    header="Detalle de mantenimiento"
+    [visible]="showMaintDetailDialog()"
+    (visibleChange)="showMaintDetailDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '22rem' }"
+    [draggable]="false"
+  >
+    @if (selectedMaint()) {
+      <div class="detail-list">
+        <div class="detail-item">
+          <span class="detail-item__label">Tipo</span>
+          <span class="detail-item__value">{{ selectedMaint()!.tipo }}</span>
+        </div>
+        @if (selectedMaint()!.descripcion) {
+          <div class="detail-item">
+            <span class="detail-item__label">Descripción</span>
+            <span class="detail-item__value">{{ selectedMaint()!.descripcion }}</span>
+          </div>
+        }
+        <div class="detail-item">
+          <span class="detail-item__label">Fecha</span>
+          <span class="detail-item__value">{{ selectedMaint()!.fecha | date:'dd/MM/yyyy' }}</span>
+        </div>
+        @if (selectedMaint()!.kilometraje !== null) {
+          <div class="detail-item">
+            <span class="detail-item__label">Kilometraje</span>
+            <span class="detail-item__value">{{ selectedMaint()!.kilometraje | number }} km</span>
+          </div>
+        }
+        @if (selectedMaint()!.proximo_service_km !== null) {
+          <div class="detail-item">
+            <span class="detail-item__label">Próximo service (km)</span>
+            <span class="detail-item__value">{{ selectedMaint()!.proximo_service_km | number }} km</span>
+          </div>
+        }
+        @if (selectedMaint()!.proximo_service_fecha) {
+          <div class="detail-item">
+            <span class="detail-item__label">Próxima fecha service</span>
+            <span class="detail-item__value">{{ selectedMaint()!.proximo_service_fecha | date:'dd/MM/yyyy' }}</span>
+          </div>
+        }
+      </div>
+    }
+    <ng-template #footer>
+      <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="showMaintDetailDialog.set(false)" />
+    </ng-template>
+  </p-dialog>
 
   <!-- Document dialog -->
   <p-dialog

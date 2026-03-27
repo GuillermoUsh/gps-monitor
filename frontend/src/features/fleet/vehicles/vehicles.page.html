@@ -24,14 +24,17 @@
 
   <!-- Filter bar -->
   <div class="filter-bar">
-    <input
-      pInputText
-      type="text"
-      placeholder="Buscar por patente, marca o modelo..."
-      [(ngModel)]="filterSearch"
-      (keyup.enter)="loadVehicles()"
-      class="filter-search"
-    />
+    <div class="search-wrapper">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        pInputText
+        type="text"
+        placeholder="Buscar patente, marca o modelo..."
+        [(ngModel)]="filterSearch"
+        (keyup.enter)="loadVehicles()"
+        class="filter-search"
+      />
+    </div>
     <p-select
       [options]="estadoOptions"
       [(ngModel)]="filterEstado"
@@ -42,15 +45,10 @@
       appendTo="body"
       class="filter-estado"
     />
-    <p-button
-      icon="pi pi-search"
-      severity="secondary"
-      (onClick)="loadVehicles()"
-    />
   </div>
 
-  <!-- Table -->
-  <div class="table-wrapper">
+  <!-- Desktop table -->
+  <div class="table-wrapper desktop-only">
     <p-table
       [value]="vehicles()"
       [loading]="loading()"
@@ -62,7 +60,6 @@
         <tr>
           <th>Alias</th>
           <th>Patente</th>
-          <th>Marca / Modelo</th>
           <th>Año</th>
           <th>Tipo</th>
           <th>Estado</th>
@@ -75,7 +72,6 @@
         <tr>
           <td class="font-semibold">{{ v.alias ?? '—' }}</td>
           <td>{{ v.patente }}</td>
-          <td>{{ v.marca }} {{ v.modelo }}</td>
           <td>{{ v.anio ?? '—' }}</td>
           <td>{{ v.tipo ?? '—' }}</td>
           <td>
@@ -94,38 +90,56 @@
           </td>
           <td>
             <div class="action-buttons">
-              <p-button
-                icon="pi pi-eye"
-                severity="info"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                [routerLink]="['/fleet/vehicles', v.id]"
-                pTooltip="Ver detalle"
-              />
-              <p-button
-                icon="pi pi-pencil"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                (onClick)="openEditDialog(v)"
-                pTooltip="Editar"
-              />
-              <p-button
-                icon="pi pi-trash"
-                severity="danger"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                (onClick)="confirmDelete(v)"
-                pTooltip="Eliminar"
-              />
+              <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                size="small" [routerLink]="['/fleet/vehicles', v.id]" pTooltip="Ver detalle" />
+              <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true"
+                size="small" (onClick)="openEditDialog(v)" pTooltip="Editar" />
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                size="small" (onClick)="confirmDelete(v)" pTooltip="Eliminar" />
             </div>
           </td>
         </tr>
       </ng-template>
     </p-table>
+  </div>
+
+  <!-- Mobile cards -->
+  <div class="mobile-only mobile-list">
+    @if (loading()) {
+      <div class="mobile-loading">
+        <i class="pi pi-spin pi-spinner"></i>
+      </div>
+    }
+    @for (v of vehicles(); track v.id) {
+      <div class="vehicle-card">
+        <div class="vehicle-card__header">
+          <span class="vehicle-card__alias">{{ v.alias ?? v.patente }}</span>
+          <p-tag [value]="getEstadoLabel(v.estado)" [severity]="getEstadoSeverity(v.estado)" />
+        </div>
+        <div class="vehicle-card__info">
+          {{ v.marca }} {{ v.modelo }}
+          @if (v.anio) { · {{ v.anio }} }
+        </div>
+        <div class="vehicle-card__meta">
+          <span>{{ v.patente }}</span>
+          <span>{{ v.kilometraje | number }} km</span>
+          @if (v.currentDriver) {
+            <span class="vehicle-card__driver">
+              <i class="pi pi-user"></i> {{ v.currentDriver.email }}
+            </span>
+          }
+        </div>
+        <div class="vehicle-card__actions">
+          <p-button icon="pi pi-pencil" label="Editar" severity="secondary" [text]="true"
+            size="small" (onClick)="openEditDialog(v)" />
+          <p-button icon="pi pi-eye" label="Ver detalle" severity="info" [text]="true"
+            size="small" [routerLink]="['/fleet/vehicles', v.id]" />
+        </div>
+      </div>
+    }
+    @if (!loading() && vehicles().length === 0) {
+      <p class="mobile-empty">Sin vehículos registrados</p>
+    }
   </div>
 
   <!-- Create/Edit dialog -->
