@@ -5,7 +5,13 @@
 @import 'primeicons/primeicons.css';
 @import 'leaflet/dist/leaflet.css';
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html, body {
+  margin: 0;
+  padding: 0;
   height: 100%;
   font-family: var(--p-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }

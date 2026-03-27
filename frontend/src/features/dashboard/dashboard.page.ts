@@ -9,7 +9,6 @@ import { AlertService } from '../fleet/alerts/alert.service';
 import { FleetDashboardDto } from '../../core/api/api.types';
 import { firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
 import { TagModule } from 'primeng/tag';
 
 @Component({
@@ -17,7 +16,7 @@ import { TagModule } from 'primeng/tag';
   standalone: true,
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
-  imports: [RouterLink, ButtonModule, ToolbarModule, TagModule],
+  imports: [RouterLink, ButtonModule, TagModule],
 })
 export class DashboardPage implements OnInit {
   private readonly authService  = inject(AuthService);
