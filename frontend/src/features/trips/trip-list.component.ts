@@ -2,11 +2,11 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
@@ -27,7 +27,6 @@ import { TripDto, RouteDto } from '../../core/api/api.types';
     FormsModule,
     ButtonModule,
     TableModule,
-    ToolbarModule,
     ToastModule,
     ConfirmDialogModule,
     DialogModule,
@@ -44,6 +43,9 @@ export class TripListComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
+
+  goBack(): void { this.location.back(); }
 
   trips = signal<TripDto[]>([]);
   routes = signal<RouteDto[]>([]);

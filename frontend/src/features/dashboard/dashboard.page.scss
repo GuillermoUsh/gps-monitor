@@ -33,15 +33,28 @@
 }
 
 .greeting {
-  padding: 0 .75rem;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eff0ff;
+  border-bottom: 1px solid #e0e2ff;
+  padding: 1.25rem 1rem;
+  margin-bottom: .5rem;
+
+  h2 { font-size: 1.15rem; font-weight: 700; color: #1e293b; margin: 0; }
+  p  { font-size: .8rem; color: #6366f1; margin: .2rem 0 0; }
+
+  &__icon {
+    font-size: 2rem;
+    color: #c7d2fe;
+  }
 
   @media (min-width: 1024px) {
-    padding: 0 1.25rem;
-    margin-bottom: 1.25rem;
+    padding: 1.5rem 2rem;
+    border-radius: .75rem;
+    margin: 1rem 1.25rem .5rem;
+    h2 { font-size: 1.35rem; }
   }
-  h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; }
-  p  { font-size: .85rem; color: #94a3b8; margin: .25rem 0 0; }
 }
 
 /* Dashboard grid */

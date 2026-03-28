@@ -1,27 +1,20 @@
 <div class="drivers-layout">
   <p-toast />
 
-  <p-toolbar>
-    <ng-template #start>
-      <p-button
-        icon="pi pi-arrow-left"
-        severity="secondary"
-        [text]="true"
-        routerLink="/fleet"
-        class="mr-2"
-      />
-      <span class="text-lg font-bold">Choferes</span>
-    </ng-template>
-    <ng-template #end>
-      <p-button
-        label="Nuevo chofer"
-        icon="pi pi-plus"
-        (onClick)="openCreateDialog()"
-      />
-    </ng-template>
-  </p-toolbar>
+  <div class="topbar">
+    <div class="topbar__left">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" routerLink="/fleet" />
+    </div>
+    <span class="topbar__title">Choferes</span>
+    <div class="topbar__right"></div>
+  </div>
 
-  <div class="table-wrapper">
+  <div class="action-bar">
+    <p-button label="Nuevo chofer" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()" />
+  </div>
+
+  <!-- Desktop: tabla -->
+  <div class="table-wrapper desktop-only">
     <p-table
       [value]="drivers()"
       [loading]="loading()"
@@ -43,19 +36,14 @@
       <ng-template #body let-driver>
         <tr>
           <td>
-            @if (driver.nombre || driver.apellido) {
-              {{ driver.nombre }} {{ driver.apellido }}
-            } @else {
-              <span class="text-gray-400">—</span>
-            }
+            @if (driver.nombre || driver.apellido) { {{ driver.nombre }} {{ driver.apellido }} }
+            @else { <span class="text-gray-400">—</span> }
           </td>
           <td>{{ driver.email }}</td>
           <td>{{ driver.licencia || '—' }}</td>
           <td>
-            <p-tag
-              [value]="getLicenciaLabel(driver.vencimiento_licencia)"
-              [severity]="getLicenciaSeverity(driver.vencimiento_licencia)"
-            />
+            <p-tag [value]="getLicenciaLabel(driver.vencimiento_licencia)"
+                   [severity]="getLicenciaSeverity(driver.vencimiento_licencia)" />
           </td>
           <td>{{ driver.telefono || '—' }}</td>
           <td>
@@ -66,19 +54,50 @@
             }
           </td>
           <td>
-            <p-button
-              icon="pi pi-pencil"
-              severity="secondary"
-              [text]="true"
-              [rounded]="true"
-              size="small"
-              (onClick)="openEditDialog(driver)"
-              pTooltip="Editar perfil"
-            />
+            <p-button icon="pi pi-pencil" severity="secondary" [text]="true"
+              size="small" (onClick)="openEditDialog(driver)" pTooltip="Editar perfil" />
           </td>
         </tr>
       </ng-template>
     </p-table>
+  </div>
+
+  <!-- Mobile: cards -->
+  <div class="mobile-list mobile-only">
+    @if (loading()) {
+      <div class="mobile-loading"><i class="pi pi-spin pi-spinner"></i></div>
+    } @else if (drivers().length === 0) {
+      <div class="mobile-empty">Sin choferes registrados.</div>
+    } @else {
+      @for (driver of drivers(); track driver.user_id) {
+        <div class="driver-card">
+          <div class="driver-card__header">
+            <span class="driver-card__name">
+              @if (driver.nombre || driver.apellido) { {{ driver.nombre }} {{ driver.apellido }} }
+              @else { <span class="no-name">Sin nombre</span> }
+            </span>
+            <p-tag [value]="getLicenciaLabel(driver.vencimiento_licencia)"
+                   [severity]="getLicenciaSeverity(driver.vencimiento_licencia)" />
+          </div>
+          <div class="driver-card__email">{{ driver.email }}</div>
+          <div class="driver-card__meta">
+            @if (driver.licencia) {
+              <span><i class="pi pi-id-card"></i> {{ driver.licencia }}</span>
+            }
+            @if (driver.telefono) {
+              <span><i class="pi pi-phone"></i> {{ driver.telefono }}</span>
+            }
+            @if (driver.curso_puerto) {
+              <span class="puerto-ok"><i class="pi pi-check-circle"></i> Puerto</span>
+            }
+          </div>
+          <div class="driver-card__actions">
+            <p-button icon="pi pi-pencil" label="Editar" severity="secondary"
+              size="small" [text]="true" (onClick)="openEditDialog(driver)" />
+          </div>
+        </div>
+      }
+    }
   </div>
 
   <!-- Create dialog -->

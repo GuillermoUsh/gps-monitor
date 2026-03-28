@@ -16,13 +16,12 @@ import { SocketService } from '../../core/socket/socket.service';
 import { PositionService } from '../../core/api/position.service';
 import { PositionUpdatePayload } from '../../core/socket/socket.service';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-live-map',
   standalone: true,
-  imports: [CommonModule, ButtonModule, ToolbarModule, ToastModule],
+  imports: [CommonModule, ButtonModule, ToastModule],
   providers: [MessageService],
   templateUrl: './live-map.component.html',
   styleUrl: './live-map.component.scss',
@@ -36,6 +35,12 @@ export class LiveMapComponent implements OnInit, OnDestroy {
   private L: any = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private markers = new Map<string, any>();
+
+  panelOpen = signal(false);
+
+  togglePanel(): void {
+    this.panelOpen.update(v => !v);
+  }
 
   // Feature 1: Trail toggle
   showTrail = signal(true);

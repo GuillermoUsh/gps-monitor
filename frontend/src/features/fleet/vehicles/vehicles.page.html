@@ -2,25 +2,17 @@
   <p-toast />
   <p-confirmDialog />
 
-  <p-toolbar>
-    <ng-template #start>
-      <p-button
-        icon="pi pi-arrow-left"
-        severity="secondary"
-        [text]="true"
-        routerLink="/fleet"
-        class="mr-2"
-      />
-      <span class="text-lg font-bold">Vehículos</span>
-    </ng-template>
-    <ng-template #end>
-      <p-button
-        label="Nuevo vehículo"
-        icon="pi pi-plus"
-        (onClick)="openCreateDialog()"
-      />
-    </ng-template>
-  </p-toolbar>
+  <div class="topbar">
+    <div class="topbar__left">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" routerLink="/fleet" />
+    </div>
+    <span class="topbar__title">Vehículos</span>
+    <div class="topbar__right"></div>
+  </div>
+
+  <div class="action-bar">
+    <p-button label="Nuevo vehículo" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()" />
+  </div>
 
   <!-- Filter bar -->
   <div class="filter-bar">
@@ -133,7 +125,7 @@
           <p-button icon="pi pi-pencil" label="Editar" severity="secondary" [text]="true"
             size="small" (onClick)="openEditDialog(v)" />
           <p-button icon="pi pi-eye" label="Ver detalle" severity="info" [text]="true"
-            size="small" [routerLink]="['/fleet/vehicles', v.id]" />
+            size="small" (onClick)="goToDetail(v.id)" />
         </div>
       </div>
     }

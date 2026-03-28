@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -18,7 +18,6 @@ import { UserService, UserDto, CreateUserInput } from '../../core/api/user.servi
   imports: [
     ButtonModule,
     TableModule,
-    ToolbarModule,
     ToastModule,
     DialogModule,
     InputTextModule,
@@ -34,6 +33,9 @@ import { UserService, UserDto, CreateUserInput } from '../../core/api/user.servi
 export class UsersPage implements OnInit {
   private readonly userService = inject(UserService);
   private readonly messageService = inject(MessageService);
+  private readonly location = inject(Location);
+
+  goBack(): void { this.location.back(); }
 
   users = signal<UserDto[]>([]);
   loading = signal(false);

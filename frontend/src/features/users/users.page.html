@@ -1,20 +1,19 @@
 <div class="users-layout">
   <p-toast />
 
-  <p-toolbar>
-    <ng-template #start>
-      <span class="text-lg font-bold">Usuarios</span>
-    </ng-template>
-    <ng-template #end>
-      <p-button
-        label="Nuevo usuario"
-        icon="pi pi-plus"
-        (onClick)="openCreateDialog()"
-      />
-    </ng-template>
-  </p-toolbar>
+  <div class="topbar">
+    <div class="topbar__left">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" (onClick)="goBack()" />
+    </div>
+    <span class="topbar__title">Usuarios</span>
+    <div class="topbar__right"></div>
+  </div>
 
-  <div class="mt-4">
+  <div class="action-bar">
+    <p-button label="Nuevo usuario" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()" />
+  </div>
+
+  <div class="table-wrapper">
     <p-table
       [value]="users()"
       [loading]="loading()"

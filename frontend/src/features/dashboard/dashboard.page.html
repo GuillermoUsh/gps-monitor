@@ -12,8 +12,11 @@
   <div class="content">
 
     <div class="greeting">
-      <h2>Bienvenido 👋</h2>
-      <p>Panel de control</p>
+      <div class="greeting__text">
+        <h2>Bienvenido 👋</h2>
+        <p>{{ user()?.email }}</p>
+      </div>
+      <i class="pi pi-map greeting__icon"></i>
     </div>
 
     <div class="dashboard-grid">

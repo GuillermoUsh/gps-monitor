@@ -2,49 +2,83 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
 }
 
-.history-toolbar {
+/* Topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .625rem .75rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
+  gap: .5rem;
+
+  &__start {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
 }
 
 .trip-info {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: .5rem;
+  min-width: 0;
 }
 
 .trip-name {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: .9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+
+  @media (min-width: 480px) { max-width: 280px; }
 }
 
 .trip-date {
-  font-size: 0.875rem;
+  font-size: .75rem;
   color: #6b7280;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-// Stats row
+/* Stats */
 .stats-row {
-  display: flex;
-  gap: 1rem;
-  padding: 0.75rem 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  padding: .625rem .75rem;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
-  flex-wrap: wrap;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+    padding: .75rem 1.25rem;
+  }
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5rem 1.25rem;
+  padding: .5rem;
   border-radius: 8px;
   background: #fff;
   border: 1px solid #e5e7eb;
-  min-width: 110px;
 
   &.deviation {
     border-color: #fca5a5;
@@ -53,56 +87,52 @@
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: .7rem;
   color: #6b7280;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: .04em;
+  text-align: center;
 }
 
 .stat-value {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #111827;
   margin-top: 2px;
 }
 
-// Map legend
+/* Legend */
 .map-legend {
   display: flex;
-  gap: 1.5rem;
-  padding: 0.5rem 1.25rem;
+  gap: 1rem;
+  padding: .375rem .75rem;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
-  font-size: 0.8125rem;
+  font-size: .78rem;
   color: #374151;
+  flex-wrap: wrap;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: .375rem;
 }
 
 .legend-line {
   display: inline-block;
-  width: 28px;
+  width: 22px;
   height: 3px;
 
   &.dashed {
     background: repeating-linear-gradient(
-      to right,
-      #3b82f6 0,
-      #3b82f6 6px,
-      transparent 6px,
-      transparent 10px
+      to right, #3b82f6 0, #3b82f6 5px, transparent 5px, transparent 9px
     );
   }
 
-  &.solid {
-    background: #16a34a;
-  }
+  &.solid { background: #16a34a; }
 }
 
 .legend-dot {
@@ -112,10 +142,10 @@
   border-radius: 50%;
   background: #dc2626;
   border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 
-// Map body
+/* Map */
 .map-body {
   flex: 1;
   position: relative;
@@ -133,7 +163,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255,255,255,.75);
   z-index: 1000;
   font-size: 1rem;
   color: #6b7280;

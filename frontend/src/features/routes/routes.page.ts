@@ -9,7 +9,6 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
@@ -31,7 +30,6 @@ import { AuthService } from '../../core/auth/auth.service';
     TableModule,
     CardModule,
     InputTextModule,
-    ToolbarModule,
     ToastModule,
     ConfirmDialogModule,
     DialogModule,

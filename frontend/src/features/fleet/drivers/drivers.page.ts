@@ -5,7 +5,6 @@ import { firstValueFrom } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -26,7 +25,6 @@ import { DriverProfileDto } from '../../../core/api/api.types';
     FormsModule,
     ButtonModule,
     TableModule,
-    ToolbarModule,
     ToastModule,
     DialogModule,
     InputTextModule,

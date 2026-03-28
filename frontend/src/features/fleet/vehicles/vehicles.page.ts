@@ -1,12 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -28,7 +27,6 @@ import { VehicleDto } from '../../../core/api/api.types';
     FormsModule,
     ButtonModule,
     TableModule,
-    ToolbarModule,
     ToastModule,
     DialogModule,
     ConfirmDialogModule,
@@ -46,6 +44,9 @@ import { VehicleDto } from '../../../core/api/api.types';
 export class VehiclesPage implements OnInit {
   private readonly fleetService = inject(FleetService);
   private readonly messageService = inject(MessageService);
+  private readonly router = inject(Router);
+
+  goToDetail(id: string): void { this.router.navigate(['/fleet/vehicles', id]); }
   private readonly confirmationService = inject(ConfirmationService);
 
   vehicles = signal<VehicleDto[]>([]);

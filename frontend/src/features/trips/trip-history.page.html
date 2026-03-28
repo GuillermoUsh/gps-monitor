@@ -2,25 +2,21 @@
 
   <p-toast />
 
-  <!-- Toolbar -->
-  <p-toolbar class="history-toolbar">
-    <ng-template #start>
-      <p-button icon="pi pi-arrow-left" label="Volver" [text]="true" (onClick)="goBack()" />
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar__start">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" (onClick)="goBack()" />
       @if (trip()) {
-        <div class="trip-info ml-3">
+        <div class="trip-info">
           <span class="trip-name">{{ trip()!.routeName ?? trip()!.routeId }}</span>
-          <p-tag
-            [value]="trip()!.status"
-            [severity]="getStatusSeverity(trip()!.status)"
-            styleClass="ml-2"
-          />
-          <span class="trip-date ml-2">{{ trip()!.startedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          <p-tag [value]="trip()!.status" [severity]="getStatusSeverity(trip()!.status)" />
         </div>
       } @else {
-        <span class="ml-3 font-semibold">Historial de viaje</span>
+        <span class="topbar__title">Historial de viaje</span>
       }
-    </ng-template>
-  </p-toolbar>
+    </div>
+    <span class="trip-date">{{ trip()?.startedAt | date:'dd/MM/yy HH:mm' }}</span>
+  </div>
 
   <!-- Stats cards -->
   @if (stats()) {
@@ -34,23 +30,17 @@
         <div class="stat-value">{{ stats()!.deviationCount }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Vel. máxima</div>
+        <div class="stat-label">Vel. máx.</div>
         <div class="stat-value">
-          @if (stats()!.maxSpeedKmh !== null) {
-            {{ stats()!.maxSpeedKmh | number:'1.0-1' }} km/h
-          } @else {
-            —
-          }
+          @if (stats()!.maxSpeedKmh !== null) { {{ stats()!.maxSpeedKmh | number:'1.0-1' }} km/h }
+          @else { — }
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Vel. promedio</div>
+        <div class="stat-label">Vel. prom.</div>
         <div class="stat-value">
-          @if (stats()!.avgSpeedKmh !== null) {
-            {{ stats()!.avgSpeedKmh | number:'1.0-1' }} km/h
-          } @else {
-            —
-          }
+          @if (stats()!.avgSpeedKmh !== null) { {{ stats()!.avgSpeedKmh | number:'1.0-1' }} km/h }
+          @else { — }
         </div>
       </div>
     </div>
@@ -58,21 +48,18 @@
 
   <!-- Map legend -->
   <div class="map-legend">
-    <span class="legend-item planned">
-      <span class="legend-line dashed"></span>
-      Ruta planificada
+    <span class="legend-item">
+      <span class="legend-line dashed"></span> Planificada
     </span>
-    <span class="legend-item actual">
-      <span class="legend-line solid"></span>
-      Recorrido real
+    <span class="legend-item">
+      <span class="legend-line solid"></span> Real
     </span>
-    <span class="legend-item deviation-marker">
-      <span class="legend-dot"></span>
-      Punto de desvío
+    <span class="legend-item">
+      <span class="legend-dot"></span> Desvío
     </span>
   </div>
 
-  <!-- Map container -->
+  <!-- Map -->
   <div class="map-body">
     @if (loading()) {
       <div class="map-loading">Cargando historial...</div>

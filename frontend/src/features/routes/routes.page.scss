@@ -1,7 +1,108 @@
 .routes-layout {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: .75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+
+  &__left  { display: flex; align-items: center; }
+  &__title { font-size: 1.1rem; font-weight: 700; color: #1e293b; text-align: center; }
+  &__right { display: flex; align-items: center; justify-content: flex-end; }
+}
+
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: .75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Responsive */
+.desktop-only { @media (max-width: 1023px) { display: none !important; } }
+.mobile-only  { @media (min-width: 1024px) { display: none !important; } }
+
+.table-wrapper {
   padding: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.actions { display: flex; gap: .25rem; }
+
+.empty-msg { text-align: center; color: #9ca3af; padding: 2rem; }
+
+/* Mobile cards */
+.mobile-list {
+  padding: .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+}
+
+.mobile-loading,
+.mobile-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+}
+
+.route-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: .75rem;
+  padding: .875rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: .95rem;
+    color: #1e293b;
+    flex: 1;
+    margin-right: .5rem;
+  }
+
+  &__route {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    font-size: .82rem;
+    color: #475569;
+    margin-bottom: .375rem;
+    flex-wrap: wrap;
+  }
+
+  &__point { display: flex; align-items: center; gap: .25rem; }
+
+  &__arrow { color: #cbd5e1; font-size: .7rem; }
+
+  &__meta {
+    font-size: .78rem;
+    color: #94a3b8;
+    margin-bottom: .625rem;
+    display: flex;
+    gap: .75rem;
+    i { font-size: .7rem; }
+  }
+
+  &__actions {
+    border-top: 1px solid #f1f5f9;
+    padding-top: .5rem;
+    display: flex;
+    gap: .25rem;
+  }
 }
 
 // ── Dialog two-column layout ────────────────────────────────────────

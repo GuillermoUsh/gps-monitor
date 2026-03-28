@@ -3,63 +3,100 @@
   <p-toast />
   <p-confirmDialog />
 
-  <p-toolbar styleClass="mb-4">
-    <ng-template #start>
-      <p-button icon="pi pi-arrow-left" [text]="true" (onClick)="goBack()" />
-      <span class="text-xl font-bold ml-3">Rutas</span>
-    </ng-template>
-    <ng-template #end>
-      <p-button label="Nueva ruta" icon="pi pi-plus" (onClick)="openCreateDialog()" />
-    </ng-template>
-  </p-toolbar>
+  <div class="topbar">
+    <div class="topbar__left">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" (onClick)="goBack()" />
+    </div>
+    <span class="topbar__title">Rutas</span>
+    <div class="topbar__right"></div>
+  </div>
 
-  <p-table
-    [value]="routes()"
-    [loading]="loading()"
-    [paginator]="true"
-    [rows]="10"
-    styleClass="p-datatable-sm"
-    [rowHover]="true"
-  >
-    <ng-template #header>
-      <tr>
-        <th>Nombre</th>
-        <th>Origen</th>
-        <th>Destino</th>
-        <th>Waypoints</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </ng-template>
+  <div class="action-bar">
+    <p-button label="Nueva ruta" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()" />
+  </div>
 
-    <ng-template #body let-route>
-      <tr>
-        <td class="font-medium">{{ route.name }}</td>
-        <td>{{ route.origin }}</td>
-        <td>{{ route.destination }}</td>
-        <td class="text-center">{{ route.waypointCount }}</td>
-        <td><p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" /></td>
-        <td>
-          <p-button icon="pi pi-map" severity="info" [text]="true" size="small"
-                    (onClick)="openPreview(route)" pTooltip="Ver en mapa" styleClass="mr-1" />
-          @if (isAdmin) {
-            <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
-                      (onClick)="openEditDialog(route)" pTooltip="Editar" styleClass="mr-1" />
-            <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
-                      (onClick)="confirmDelete(route)" pTooltip="Eliminar" />
-          }
-        </td>
-      </tr>
-    </ng-template>
+  <!-- Desktop: tabla -->
+  <div class="table-wrapper desktop-only">
+    <p-table
+      [value]="routes()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="10"
+      styleClass="p-datatable-sm"
+      [rowHover]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Nombre</th>
+          <th>Origen</th>
+          <th>Destino</th>
+          <th>Waypoints</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-route>
+        <tr>
+          <td class="font-medium">{{ route.name }}</td>
+          <td>{{ route.origin }}</td>
+          <td>{{ route.destination }}</td>
+          <td class="text-center">{{ route.waypointCount }}</td>
+          <td><p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" /></td>
+          <td>
+            <div class="actions">
+              <p-button icon="pi pi-map" severity="info" [text]="true" size="small"
+                        (onClick)="openPreview(route)" pTooltip="Ver en mapa" />
+              @if (isAdmin) {
+                <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
+                          (onClick)="openEditDialog(route)" pTooltip="Editar" />
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                          (onClick)="confirmDelete(route)" pTooltip="Eliminar" />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="6" class="empty-msg">Sin rutas. Creá una para empezar.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
 
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="6" class="text-center text-gray-400 py-8">
-          Sin rutas. Creá una para empezar.
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+  <!-- Mobile: cards -->
+  <div class="mobile-list mobile-only">
+    @if (loading()) {
+      <div class="mobile-loading"><i class="pi pi-spin pi-spinner"></i></div>
+    } @else if (routes().length === 0) {
+      <div class="mobile-empty">Sin rutas. Creá una para empezar.</div>
+    } @else {
+      @for (route of routes(); track route.id) {
+        <div class="route-card">
+          <div class="route-card__header">
+            <span class="route-card__name">{{ route.name }}</span>
+            <p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" />
+          </div>
+          <div class="route-card__route">
+            <span class="route-card__point"><i class="pi pi-map-marker"></i> {{ route.origin }}</span>
+            <i class="pi pi-arrow-right route-card__arrow"></i>
+            <span class="route-card__point"><i class="pi pi-flag"></i> {{ route.destination }}</span>
+          </div>
+          <div class="route-card__meta">
+            <span><i class="pi pi-circle"></i> {{ route.waypointCount }} waypoints</span>
+          </div>
+          <div class="route-card__actions">
+            <p-button icon="pi pi-map" label="Ver mapa" severity="info" size="small" [text]="true"
+                      (onClick)="openPreview(route)" />
+            @if (isAdmin) {
+              <p-button icon="pi pi-pencil" severity="secondary" size="small" [text]="true"
+                        (onClick)="openEditDialog(route)" />
+              <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                        (onClick)="confirmDelete(route)" />
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
 
 </div>
 

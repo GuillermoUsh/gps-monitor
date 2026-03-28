@@ -2,33 +2,47 @@
 
 <div class="map-layout">
 
-  <p-toolbar class="map-toolbar">
-    <ng-template #start>
-      <p-button icon="pi pi-arrow-left" label="Volver" [text]="true" (onClick)="goBack()" />
-      <span class="ml-3 font-semibold">Mapa en vivo</span>
-    </ng-template>
-    <ng-template #end>
+  <div class="map-topbar">
+    <div class="map-topbar__start">
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" size="small" (onClick)="goBack()" />
+      <span class="map-topbar__title">Mapa en vivo</span>
+    </div>
+    <div class="map-topbar__end">
       <p-button
         icon="pi pi-map"
-        [label]="showTrail() ? 'Recorrido ON' : 'Recorrido OFF'"
         [outlined]="!showTrail()"
         severity="secondary"
         size="small"
-        class="mr-3"
         (onClick)="toggleTrail()"
+        class="trail-btn"
       />
       <span class="status-badge" [class.connected]="connectionStatus === 'connected'">
         {{ connectionStatus }}
       </span>
-    </ng-template>
-  </p-toolbar>
+    </div>
+  </div>
 
   <div class="map-body">
     <div #mapContainer class="map-container"></div>
 
-    <aside class="side-panel">
+    <!-- Botón flotante para abrir panel en mobile -->
+    <button class="panel-fab" (click)="togglePanel()">
+      <i class="pi pi-list"></i>
+      @if (positionEntries().length > 0) {
+        <span class="panel-fab__badge">{{ positionEntries().length }}</span>
+      }
+    </button>
+
+    <!-- Backdrop -->
+    @if (panelOpen()) {
+      <div class="panel-backdrop" (click)="togglePanel()"></div>
+    }
+
+    <aside class="side-panel" [class.open]="panelOpen()">
       <div class="panel-header">
         <h3>Viajes activos</h3>
+        <p-button icon="pi pi-times" [text]="true" severity="secondary" size="small"
+          class="panel-close" (onClick)="togglePanel()" />
       </div>
 
       @for (entry of positionEntries(); track entry[0]) {

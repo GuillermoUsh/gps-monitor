@@ -3,12 +3,33 @@
   background: #f8f9fa;
 }
 
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: .75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+
+  &__left  { display: flex; align-items: center; }
+  &__title { font-size: 1.1rem; font-weight: 700; color: #1e293b; text-align: center; }
+  &__right { display: flex; align-items: center; justify-content: flex-end; }
+}
+
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: .75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
 /* Responsive visibility */
 .desktop-only {
-  @media (max-width: 1023px) { display: none; }
+  @media (max-width: 1023px) { display: none !important; }
 }
 .mobile-only {
-  @media (min-width: 1024px) { display: none; }
+  @media (min-width: 1024px) { display: none !important; }
 }
 
 .filter-bar {

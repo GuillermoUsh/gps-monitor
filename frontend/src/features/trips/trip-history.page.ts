@@ -11,9 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
-import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
 
@@ -27,9 +25,7 @@ import { TripDto, PositionHistoryDto, TripStatsDto, RouteDto } from '../../core/
   imports: [
     CommonModule,
     ButtonModule,
-    ToolbarModule,
     ToastModule,
-    CardModule,
     TagModule,
   ],
   providers: [MessageService],
