@@ -227,6 +227,7 @@ export const TripService = {
           ended_at: t.endedAt, tipo_viaje: t.tipoViaje, scheduled_departure: t.scheduledDeparture,
           scheduled_return: t.scheduledReturn,
           duracion_actividad_minutos: t.duracionActividadMinutos,
+          cantidad_pasajeros: t.cantidadPasajeros,
           created_at: t.startedAt, updated_at: t.startedAt,
         },
         t.routeDuracionMinutos,
@@ -258,6 +259,7 @@ export const TripService = {
       scheduledDeparture:       updated.scheduled_departure,
       scheduledReturn:          updated.scheduled_return,
       duracionActividadMinutos: updated.duracion_actividad_minutos,
+      cantidadPasajeros:        updated.cantidad_pasajeros,
     };
   },
 
@@ -285,6 +287,7 @@ export const TripService = {
       scheduledDeparture:       updated.scheduled_departure,
       scheduledReturn:          updated.scheduled_return,
       duracionActividadMinutos: updated.duracion_actividad_minutos,
+      cantidadPasajeros:        updated.cantidad_pasajeros,
     };
   },
 

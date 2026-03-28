@@ -58,6 +58,7 @@ export const TRIP_STATUS = {
   ACTIVE:    'active',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
+  SCHEDULED: 'scheduled',
 } as const;
 export type TripStatus = (typeof TRIP_STATUS)[keyof typeof TRIP_STATUS];
 
