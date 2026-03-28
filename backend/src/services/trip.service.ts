@@ -172,6 +172,7 @@ export const TripService = {
           scheduled_departure: dep,
           scheduled_return: input.scheduledReturn ? new Date(input.scheduledReturn) : null,
           duracion_actividad_minutos: input.duracionActividadMinutos ?? null,
+          cantidad_pasajeros: input.cantidadPasajeros ?? null,
           created_at: dep,
           updated_at: dep,
         },
