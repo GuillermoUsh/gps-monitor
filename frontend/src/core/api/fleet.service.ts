@@ -105,6 +105,12 @@ export class FleetService {
       .pipe(map(res => res.data));
   }
 
+  updateMaintenance(id: string, data: Partial<MaintenanceDto>): Observable<MaintenanceDto> {
+    return this.http
+      .patch<{ data: MaintenanceDto }>(`${this.base}/fleet/maintenances/${id}`, data)
+      .pipe(map(res => res.data));
+  }
+
   // Drivers
   getDriverProfiles(): Observable<DriverProfileDto[]> {
     return this.http
