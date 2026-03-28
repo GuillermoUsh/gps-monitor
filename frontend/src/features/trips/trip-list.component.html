@@ -30,21 +30,35 @@
     >
       <ng-template #header>
         <tr>
-          <th>ID</th>
           <th>Ruta</th>
-          <th>Km</th>
+          <th>Tipo</th>
+          <th>Salida</th>
+          <th>Pasajeros</th>
+          <th>Disponibilidad</th>
           <th>Estado</th>
-          <th>Inicio</th>
           <th>Acciones</th>
         </tr>
       </ng-template>
       <ng-template #body let-trip>
         <tr>
-          <td class="mono">{{ trip.id | slice:0:8 }}...</td>
           <td>{{ trip.routeName ?? trip.routeId }}</td>
-          <td>{{ trip.distanceKm | number:'1.1-1' }} km</td>
-          <td><p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)" /></td>
-          <td>{{ trip.startedAt | date:'dd/MM HH:mm' }}</td>
+          <td>{{ trip.tipoViaje ? labelTipo(trip.tipoViaje) : 'GPS' }}</td>
+          <td>{{ (trip.scheduledDeparture ?? trip.startedAt) | date:'dd/MM HH:mm' }}</td>
+          <td>{{ trip.cantidadPasajeros ?? '—' }}</td>
+          <td>
+            @if (trip.disponibilidad?.tipo === 'libre') {
+              <span class="disp-badge disp-badge--libre">
+                Libre {{ trip.disponibilidad!.desde | date:'HH:mm' }} – {{ trip.disponibilidad!.hasta | date:'HH:mm' }}
+              </span>
+            } @else if (trip.disponibilidad?.tipo === 'ocupado_espera') {
+              <span class="disp-badge disp-badge--espera">
+                Regresa ~{{ trip.disponibilidad!.regresaAprox | date:'HH:mm' }}
+              </span>
+            } @else {
+              <span class="text-gray-400">—</span>
+            }
+          </td>
+          <td><p-tag [value]="getStatusLabel(trip.status)" [severity]="getStatusSeverity(trip.status)" /></td>
           <td>
             <div class="actions">
               @if (trip.status === 'active') {
@@ -52,13 +66,17 @@
                 <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="cancelTrip(trip)" />
                 <p-button label="Simulador" icon="pi pi-map-marker" severity="secondary" size="small" [outlined]="true" (onClick)="goToSimulator(trip.id)" />
               }
+              @if (trip.status === 'scheduled') {
+                <p-button label="Editar" icon="pi pi-pencil" severity="secondary" size="small" [text]="true" (onClick)="openEditDialog(trip)" />
+                <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="cancelTrip(trip)" />
+              }
               <p-button label="Historial" icon="pi pi-map" severity="secondary" size="small" [text]="true" (onClick)="goToHistory(trip.id)" />
             </div>
           </td>
         </tr>
       </ng-template>
       <ng-template #emptymessage>
-        <tr><td colspan="6" class="empty-msg">Sin viajes. Iniciá uno nuevo.</td></tr>
+        <tr><td colspan="7" class="empty-msg">Sin viajes. Iniciá uno nuevo.</td></tr>
       </ng-template>
     </p-table>
   </div>
@@ -74,18 +92,35 @@
         <div class="trip-card">
           <div class="trip-card__header">
             <span class="trip-card__ruta">{{ trip.routeName ?? trip.routeId }}</span>
-            <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)" />
+            <p-tag [value]="getStatusLabel(trip.status)" [severity]="getStatusSeverity(trip.status)" />
           </div>
           <div class="trip-card__meta">
-            <span><i class="pi pi-map"></i> {{ trip.distanceKm | number:'1.1-1' }} km</span>
-            <span><i class="pi pi-clock"></i> {{ trip.startedAt | date:'dd/MM HH:mm' }}</span>
-            <span class="mono">{{ trip.id | slice:0:8 }}...</span>
+            <span><i class="pi pi-clock"></i> {{ (trip.scheduledDeparture ?? trip.startedAt) | date:'dd/MM HH:mm' }}</span>
+            <span>{{ trip.tipoViaje ? labelTipo(trip.tipoViaje) : 'GPS en tiempo real' }}</span>
+            @if (trip.cantidadPasajeros) {
+              <span><i class="pi pi-users"></i> {{ trip.cantidadPasajeros }} pas.</span>
+            }
           </div>
+          @if (trip.disponibilidad?.tipo === 'libre') {
+            <div class="disp-badge disp-badge--libre">
+              <i class="pi pi-check-circle"></i>
+              Libre {{ trip.disponibilidad!.desde | date:'HH:mm' }} – {{ trip.disponibilidad!.hasta | date:'HH:mm' }}
+            </div>
+          } @else if (trip.disponibilidad?.tipo === 'ocupado_espera') {
+            <div class="disp-badge disp-badge--espera">
+              <i class="pi pi-clock"></i>
+              Regresa aprox. {{ trip.disponibilidad!.regresaAprox | date:'HH:mm' }}
+            </div>
+          }
           <div class="trip-card__actions">
             @if (trip.status === 'active') {
               <p-button icon="pi pi-check" severity="info" size="small" [text]="true" (onClick)="completeTrip(trip)" />
               <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="cancelTrip(trip)" />
               <p-button icon="pi pi-map-marker" severity="secondary" size="small" [outlined]="true" (onClick)="goToSimulator(trip.id)" />
+            }
+            @if (trip.status === 'scheduled') {
+              <p-button icon="pi pi-pencil" label="Editar" severity="secondary" size="small" [text]="true" (onClick)="openEditDialog(trip)" />
+              <p-button icon="pi pi-times" label="Cancelar" severity="danger" size="small" [text]="true" (onClick)="cancelTrip(trip)" />
             }
             <p-button icon="pi pi-map" label="Historial" severity="secondary" size="small" [text]="true" (onClick)="goToHistory(trip.id)" />
           </div>
@@ -96,31 +131,174 @@
 
 </div>
 
-<!-- Dialogo nuevo viaje -->
+<!-- Dialogo nuevo / editar viaje -->
 <p-dialog
-  header="Iniciar nuevo viaje"
+  [header]="editingTripId ? 'Editar viaje programado' : 'Nuevo viaje'"
   [visible]="showNewTripDialog()"
   (visibleChange)="showNewTripDialog.set($event)"
   [modal]="true"
-  [style]="{ width: 'min(420px, 95vw)' }"
+  [style]="{ width: 'min(480px, 95vw)' }"
   [draggable]="false"
 >
   <div class="dialog-body">
+
+    @if (editingTripId) {
+      <!-- Modo edición: ruta y chofer son solo lectura -->
+      <div class="field">
+        <label>Ruta</label>
+        <span class="edit-readonly">{{ editingTrip?.routeName }}</span>
+      </div>
+    } @else {
+      <!-- Modo creación: selector de tipo de carga -->
+      <div class="field">
+        <label>Tipo de carga</label>
+        <p-select
+          [options]="modoOptions"
+          [(ngModel)]="modoViaje"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '100%' }"
+          appendTo="body"
+        />
+      </div>
+
+      <div class="field">
+        <label>Ruta *</label>
+        <p-select [options]="routeOptions" [(ngModel)]="selectedRouteId"
+          placeholder="-- Elegí una ruta --" [style]="{ width: '100%' }"
+          appendTo="body" [filter]="true" filterPlaceholder="Buscar ruta..."
+          (onChange)="onRouteChange()" />
+        @if (selectedRouteDuracion()) {
+          <small class="text-gray-400">Duración por tramo: {{ selectedRouteDuracion() }} min</small>
+        }
+      </div>
+
+      <div class="field">
+        <label>Chofer *</label>
+        <p-select [options]="driverOptions" [(ngModel)]="selectedDriverId"
+          placeholder="-- Elegí un chofer --" [style]="{ width: '100%' }"
+          appendTo="body" [filter]="true" filterPlaceholder="Buscar chofer..." />
+      </div>
+    }
+
+    <!-- Pasajeros + Vehículo (siempre visibles) -->
     <div class="field">
-      <label>Seleccioná una ruta</label>
-      <p-select [options]="routeOptions" [(ngModel)]="selectedRouteId"
-        placeholder="-- Elegí una ruta --" [style]="{ width: '100%' }"
-        appendTo="body" [filter]="true" filterPlaceholder="Buscar ruta..." />
+      <label>Cantidad de pasajeros</label>
+      <p-inputnumber
+        [(ngModel)]="cantidadPasajeros"
+        [min]="1"
+        placeholder="Ej: 15"
+        [style]="{ width: '100%' }"
+        (onInput)="onPasajerosChange()"
+      />
     </div>
+
     <div class="field">
-      <label>Asignar chofer</label>
-      <p-select [options]="driverOptions" [(ngModel)]="selectedDriverId"
-        placeholder="-- Elegí un chofer --" [style]="{ width: '100%' }"
-        appendTo="body" [filter]="true" filterPlaceholder="Buscar chofer..." />
+      <label>Vehículo{{ cantidadPasajeros ? ' (filtrado por capacidad ≥ ' + cantidadPasajeros + ')' : '' }}</label>
+      <p-select
+        [options]="vehicleOptions"
+        [(ngModel)]="selectedVehicleId"
+        placeholder="-- Elegí un vehículo (opcional) --"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+        [filter]="true"
+        filterPlaceholder="Buscar vehículo..."
+        [showClear]="true"
+      />
+      @if (cantidadPasajeros && vehicleOptions.length === 0) {
+        <small class="text-warn">No hay vehículos disponibles con capacidad para {{ cantidadPasajeros }} pasajeros.</small>
+      }
     </div>
+
+    <!-- Campos programado (siempre visibles en edición, condicionales en creación) -->
+    @if (editingTripId || modoViaje === 'programado') {
+
+      @if (editingTripId && selectedRouteDuracion()) {
+        <small class="text-gray-400">Duración por tramo: {{ selectedRouteDuracion() }} min</small>
+      }
+
+      <div class="field">
+        <label>Tipo de viaje *</label>
+        <p-select
+          [options]="tipoViajeOptions"
+          [(ngModel)]="selectedTipoViaje"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '100%' }"
+          appendTo="body"
+          (onChange)="onTipoViajeChange()"
+        />
+      </div>
+
+      <div class="field">
+        <label>Fecha y hora de salida *</label>
+        <p-datepicker
+          [(ngModel)]="scheduledDeparture"
+          [showTime]="true"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          hourFormat="24"
+          appendTo="body"
+          [style]="{ width: '100%' }"
+          (onSelect)="recalcularDisponibilidad()"
+        />
+      </div>
+
+      @if (selectedTipoViaje === 'ida_vuelta') {
+        <div class="field">
+          <label>Hora programada para ir a buscar pasajeros *</label>
+          <p-datepicker
+            [(ngModel)]="scheduledReturn"
+            [showTime]="true"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            hourFormat="24"
+            appendTo="body"
+            [style]="{ width: '100%' }"
+            (onSelect)="recalcularDisponibilidad()"
+          />
+        </div>
+      }
+
+      @if (selectedTipoViaje === 'espera') {
+        <div class="field">
+          <label>Duración de la actividad (minutos)</label>
+          <p-inputnumber
+            [(ngModel)]="duracionActividad"
+            [min]="1"
+            placeholder="Ej: 40"
+            [style]="{ width: '100%' }"
+            (onInput)="recalcularDisponibilidad()"
+          />
+        </div>
+      }
+
+      <!-- Preview disponibilidad -->
+      @if (disponibilidadPreview()) {
+        <div class="disp-preview" [class.disp-preview--libre]="disponibilidadPreview()!.tipo === 'libre'"
+             [class.disp-preview--espera]="disponibilidadPreview()!.tipo === 'ocupado_espera'">
+          @if (disponibilidadPreview()!.tipo === 'libre') {
+            <i class="pi pi-check-circle"></i>
+            <span>Chofer/vehículo disponible de <strong>{{ disponibilidadPreview()!.desde | date:'HH:mm' }}</strong>
+              a <strong>{{ disponibilidadPreview()!.hasta | date:'HH:mm' }}</strong></span>
+          } @else if (disponibilidadPreview()!.tipo === 'ocupado_espera') {
+            <i class="pi pi-clock"></i>
+            <span>Chofer/vehículo en espera — regresa aprox. <strong>{{ disponibilidadPreview()!.regresaAprox | date:'HH:mm' }}</strong></span>
+          }
+        </div>
+      }
+
+    }
+
   </div>
   <ng-template #footer>
     <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showNewTripDialog.set(false)" />
-    <p-button label="Iniciar viaje" icon="pi pi-play" [loading]="starting()" (onClick)="startTrip()" />
+    @if (editingTripId) {
+      <p-button label="Guardar cambios" icon="pi pi-check" [loading]="starting()" (onClick)="updateTrip()" />
+    } @else if (modoViaje === 'gps') {
+      <p-button label="Iniciar viaje GPS" icon="pi pi-play" [loading]="starting()" (onClick)="startTrip()" />
+    } @else {
+      <p-button label="Programar viaje" icon="pi pi-calendar-plus" [loading]="starting()" (onClick)="scheduleTrip()" />
+    }
   </ng-template>
 </p-dialog>

@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { TripService } from '../services/trip.service';
 import { ValidationError } from '../shared/errors/app.error';
-import { TRIP_ACTION } from '../shared/types';
+import { TRIP_ACTION, TRIP_TIPO } from '../shared/types';
 
 export const TripController = {
   async start(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -39,8 +39,26 @@ export const TripController = {
 
   async list(_req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const trips = await TripService.getActiveTrips();
+      const trips = await TripService.getAllTrips();
       res.json({ status: 'success', data: trips });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async schedule(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const trip = await TripService.scheduleTrip(req.body);
+      res.status(201).json({ status: 'success', data: trip });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async reschedule(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const trip = await TripService.updateScheduledTrip(req.params.id, req.body);
+      res.json({ status: 'success', data: trip });
     } catch (err) {
       next(err);
     }

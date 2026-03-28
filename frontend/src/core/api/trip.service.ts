@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { TripDto, PositionHistoryDto, TripStatsDto } from './api.types';
+import { TripDto, PositionHistoryDto, TripStatsDto, ScheduleTripInput, UpdateScheduleTripInput } from './api.types';
 
 @Injectable({ providedIn: 'root' })
 export class TripService {
@@ -19,9 +19,9 @@ export class TripService {
       .pipe(map(res => res.data));
   }
 
-  startTrip(routeId: string, driverId?: string): Observable<TripDto> {
+  startTrip(routeId: string, driverId?: string, vehicleId?: string, cantidadPasajeros?: number): Observable<TripDto> {
     return this.http
-      .post<{ data: TripDto }>(`${this.base}/trips`, { routeId, driverId })
+      .post<{ data: TripDto }>(`${this.base}/trips`, { routeId, driverId, vehicleId, cantidadPasajeros })
       .pipe(map(res => res.data));
   }
 
@@ -34,6 +34,18 @@ export class TripService {
   cancelTrip(id: string): Observable<TripDto> {
     return this.http
       .patch<{ data: TripDto }>(`${this.base}/trips/${id}`, { action: 'cancel' })
+      .pipe(map(res => res.data));
+  }
+
+  scheduleTrip(input: ScheduleTripInput): Observable<TripDto> {
+    return this.http
+      .post<{ data: TripDto }>(`${this.base}/trips/schedule`, input)
+      .pipe(map(res => res.data));
+  }
+
+  rescheduleTrip(id: string, input: UpdateScheduleTripInput): Observable<TripDto> {
+    return this.http
+      .patch<{ data: TripDto }>(`${this.base}/trips/${id}/schedule`, input)
       .pipe(map(res => res.data));
   }
 
