@@ -4,6 +4,7 @@ export interface RouteDto {
   origin: string;
   destination: string;
   status: string;
+  duracionMinutos: number | null;
   waypointCount: number;
   waypoints?: WaypointInput[];
 }
@@ -14,14 +15,51 @@ export interface WaypointInput {
   order: number;
 }
 
+export type TripTipo = 'ida_vuelta' | 'espera';
+
+export interface DisponibilidadDto {
+  tipo: 'libre' | 'ocupado_espera' | 'sin_datos';
+  desde?: string;
+  hasta?: string;
+  regresaAprox?: string;
+}
+
 export interface TripDto {
   id: string;
   routeId: string;
   routeName?: string;
+  routeDuracionMinutos?: number | null;
   driverId: string;
+  vehicleId?: string | null;
   status: string;
   distanceKm: number;
   startedAt: string;
+  endedAt?: string | null;
+  tipoViaje?: TripTipo | null;
+  scheduledDeparture?: string | null;
+  scheduledReturn?: string | null;
+  duracionActividadMinutos?: number | null;
+  cantidadPasajeros?: number | null;
+  disponibilidad?: DisponibilidadDto;
+}
+
+export interface ScheduleTripInput {
+  routeId: string;
+  driverId: string;
+  vehicleId?: string | null;
+  tipoViaje: TripTipo;
+  scheduledDeparture: string;
+  scheduledReturn?: string | null;
+  duracionActividadMinutos?: number | null;
+  cantidadPasajeros?: number | null;
+}
+
+export interface UpdateScheduleTripInput {
+  tipoViaje: TripTipo;
+  scheduledDeparture: string;
+  scheduledReturn?: string | null;
+  duracionActividadMinutos?: number | null;
+  cantidadPasajeros?: number | null;
 }
 
 export interface PositionHistoryDto {
@@ -63,6 +101,7 @@ export interface VehicleDocumentDto {
   vehicle_id: string;
   tipo: string;
   descripcion: string | null;
+  codigo: string | null;
   fecha_vencimiento: string;
   diasRestantes?: number;
 }

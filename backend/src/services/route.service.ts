@@ -20,13 +20,14 @@ export const RouteService = {
     await waypointRepository.createMany(route.id, input.waypoints);
 
     return {
-      id:            route.id,
-      name:          route.name,
-      origin:        route.origin,
-      destination:   route.destination,
-      status:        route.status,
-      waypointCount: input.waypoints.length,
-      waypoints:     input.waypoints,
+      id:              route.id,
+      name:            route.name,
+      origin:          route.origin,
+      destination:     route.destination,
+      status:          route.status,
+      duracionMinutos: route.duracion_minutos,
+      waypointCount:   input.waypoints.length,
+      waypoints:       input.waypoints,
     };
   },
 
@@ -39,13 +40,14 @@ export const RouteService = {
     if (!route) throw new NotFoundError('Ruta no encontrada');
 
     return {
-      id:            route.id,
-      name:          route.name,
-      origin:        route.origin,
-      destination:   route.destination,
-      status:        route.status,
-      waypointCount: route.waypoints.length,
-      waypoints:     route.waypoints.map(w => ({ lat: w.lat, lng: w.lng, order: w.order })),
+      id:              route.id,
+      name:            route.name,
+      origin:          route.origin,
+      destination:     route.destination,
+      status:          route.status,
+      duracionMinutos: route.duracion_minutos,
+      waypointCount:   route.waypoints.length,
+      waypoints:       route.waypoints.map(w => ({ lat: w.lat, lng: w.lng, order: w.order })),
     };
   },
 
@@ -62,22 +64,24 @@ export const RouteService = {
     }
 
     const updated = await routeRepository.update(id, {
-      name: input.name,
-      origin: input.origin,
-      destination: input.destination,
+      name:            input.name,
+      origin:          input.origin,
+      destination:     input.destination,
+      duracionMinutos: input.duracionMinutos,
     });
 
     await waypointRepository.deleteByRouteId(id);
     await waypointRepository.createMany(id, input.waypoints);
 
     return {
-      id:            updated.id,
-      name:          updated.name,
-      origin:        updated.origin,
-      destination:   updated.destination,
-      status:        updated.status,
-      waypointCount: input.waypoints.length,
-      waypoints:     input.waypoints,
+      id:              updated.id,
+      name:            updated.name,
+      origin:          updated.origin,
+      destination:     updated.destination,
+      status:          updated.status,
+      duracionMinutos: updated.duracion_minutos,
+      waypointCount:   input.waypoints.length,
+      waypoints:       input.waypoints,
     };
   },
 

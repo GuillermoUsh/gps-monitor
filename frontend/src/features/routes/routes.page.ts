@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
@@ -30,6 +31,7 @@ import { AuthService } from '../../core/auth/auth.service';
     TableModule,
     CardModule,
     InputTextModule,
+    InputNumberModule,
     ToastModule,
     ConfirmDialogModule,
     DialogModule,
@@ -62,6 +64,7 @@ export class RoutesPage implements OnInit {
   formName = '';
   formOrigin = '';
   formDestination = '';
+  formDuracionMinutos: number | null = null;
   formWaypoints: WaypointInput[] = [];
 
   // Preview map
@@ -168,6 +171,7 @@ export class RoutesPage implements OnInit {
     this.formName = '';
     this.formOrigin = '';
     this.formDestination = '';
+    this.formDuracionMinutos = null;
     this.formWaypoints = [];
     this.showCreateDialog.set(true);
   }
@@ -178,6 +182,7 @@ export class RoutesPage implements OnInit {
     this.formName = full.name;
     this.formOrigin = full.origin;
     this.formDestination = full.destination;
+    this.formDuracionMinutos = full.duracionMinutos ?? null;
     this.formWaypoints = full.waypoints ? [...full.waypoints] : [];
     this.showCreateDialog.set(true);
   }
@@ -306,9 +311,10 @@ export class RoutesPage implements OnInit {
     }
 
     const input: CreateRouteInput = {
-      name: this.formName.trim(),
-      origin: this.formOrigin.trim(),
-      destination: this.formDestination.trim(),
+      name:            this.formName.trim(),
+      origin:          this.formOrigin.trim(),
+      destination:     this.formDestination.trim(),
+      duracionMinutos: this.formDuracionMinutos,
       waypoints: this.formWaypoints,
     };
 

@@ -30,6 +30,7 @@
           <th>Nombre</th>
           <th>Origen</th>
           <th>Destino</th>
+          <th>Duración</th>
           <th>Waypoints</th>
           <th>Estado</th>
           <th>Acciones</th>
@@ -40,6 +41,7 @@
           <td class="font-medium">{{ route.name }}</td>
           <td>{{ route.origin }}</td>
           <td>{{ route.destination }}</td>
+          <td>{{ route.duracionMinutos ? route.duracionMinutos + ' min' : '—' }}</td>
           <td class="text-center">{{ route.waypointCount }}</td>
           <td><p-tag [value]="route.status" [severity]="getStatusSeverity(route.status)" /></td>
           <td>
@@ -82,6 +84,9 @@
           </div>
           <div class="route-card__meta">
             <span><i class="pi pi-circle"></i> {{ route.waypointCount }} waypoints</span>
+            @if (route.duracionMinutos) {
+              <span><i class="pi pi-clock"></i> {{ route.duracionMinutos }} min por tramo</span>
+            }
           </div>
           <div class="route-card__actions">
             <p-button icon="pi pi-map" label="Ver mapa" severity="info" size="small" [text]="true"
@@ -148,6 +153,18 @@
       <div class="field">
         <label>Destino *</label>
         <input pInputText [(ngModel)]="formDestination" placeholder="Ej: Puerto de Ushuaia" class="w-full" />
+      </div>
+
+      <div class="field">
+        <label>Duración estimada por tramo (minutos)</label>
+        <p-inputnumber
+          [(ngModel)]="formDuracionMinutos"
+          [min]="1" [max]="480"
+          placeholder="Ej: 60"
+          [showButtons]="false"
+          class="w-full"
+        />
+        <small class="text-gray-400">Tiempo aproximado de ida (o vuelta). Se usa para calcular disponibilidad del chofer.</small>
       </div>
 
       <div class="waypoints-list">

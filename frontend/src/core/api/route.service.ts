@@ -9,6 +9,7 @@ export interface CreateRouteInput {
   name: string;
   origin: string;
   destination: string;
+  duracionMinutos?: number | null;
   waypoints: WaypointInput[];
 }
 

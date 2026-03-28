@@ -73,17 +73,24 @@ export const TRIP_ACTION = {
 } as const;
 export type TripAction = (typeof TRIP_ACTION)[keyof typeof TRIP_ACTION];
 
+export const TRIP_TIPO = {
+  IDA_VUELTA: 'ida_vuelta',
+  ESPERA:     'espera',
+} as const;
+export type TripTipo = (typeof TRIP_TIPO)[keyof typeof TRIP_TIPO];
+
 // ── GPS Tracking — DB Row types ────────────────────────────────────────────
 
 export interface RouteRow {
-  id:          string;
-  name:        string;
-  origin:      string;
-  destination: string;
-  route_path:  string;
-  status:      RouteStatus;
-  created_at:  Date;
-  updated_at:  Date;
+  id:                string;
+  name:              string;
+  origin:            string;
+  destination:       string;
+  route_path:        string;
+  status:            RouteStatus;
+  duracion_minutos:  number | null;
+  created_at:        Date;
+  updated_at:        Date;
 }
 
 export interface RouteWaypointRow {
@@ -95,15 +102,21 @@ export interface RouteWaypointRow {
 }
 
 export interface TripRow {
-  id:          string;
-  route_id:    string;
-  driver_id:   string;
-  status:      TripStatus;
-  distance_km: number;
-  started_at:  Date;
-  ended_at:    Date | null;
-  created_at:  Date;
-  updated_at:  Date;
+  id:                          string;
+  route_id:                    string;
+  driver_id:                   string;
+  vehicle_id:                  string | null;
+  status:                      TripStatus;
+  distance_km:                 number;
+  started_at:                  Date;
+  ended_at:                    Date | null;
+  tipo_viaje:                  TripTipo | null;
+  scheduled_departure:         Date | null;
+  scheduled_return:            Date | null;
+  duracion_actividad_minutos:  number | null;
+  cantidad_pasajeros:          number | null;
+  created_at:                  Date;
+  updated_at:                  Date;
 }
 
 export interface TripPositionRow {
@@ -120,35 +133,74 @@ export interface TripPositionRow {
 // ── GPS Tracking — DTOs ─────────────────────────────────────────────────────
 
 export interface CreateRouteInput {
-  name:        string;
-  origin:      string;
-  destination: string;
-  waypoints:   Array<{ lat: number; lng: number; order: number }>;
+  name:             string;
+  origin:           string;
+  destination:      string;
+  duracionMinutos?: number | null;
+  waypoints:        Array<{ lat: number; lng: number; order: number }>;
 }
 
 export interface RouteDto {
-  id:            string;
-  name:          string;
-  origin:        string;
-  destination:   string;
-  status:        RouteStatus;
-  waypointCount: number;
-  waypoints?:    Array<{ lat: number; lng: number; order: number }>;
+  id:               string;
+  name:             string;
+  origin:           string;
+  destination:      string;
+  status:           RouteStatus;
+  duracionMinutos:  number | null;
+  waypointCount:    number;
+  waypoints?:       Array<{ lat: number; lng: number; order: number }>;
+}
+
+export interface ScheduleTripInput {
+  routeId:                    string;
+  driverId:                   string;
+  vehicleId?:                 string | null;
+  tipoViaje:                  TripTipo;
+  scheduledDeparture:         string; // ISO datetime
+  scheduledReturn?:           string | null; // ida_vuelta only
+  duracionActividadMinutos?:  number | null; // espera only
+  cantidadPasajeros?:         number | null;
+}
+
+export interface UpdateScheduleTripInput {
+  tipoViaje:                  TripTipo;
+  scheduledDeparture:         string;
+  scheduledReturn?:           string | null;
+  duracionActividadMinutos?:  number | null;
+  cantidadPasajeros?:         number | null;
 }
 
 export interface CreateTripInput {
-  routeId: string;
+  routeId:             string;
+  driverId?:           string;
+  vehicleId?:          string | null;
+  cantidadPasajeros?:  number | null;
+}
+
+export interface DisponibilidadDto {
+  tipo:         'libre' | 'ocupado_espera' | 'sin_datos';
+  desde?:       Date;
+  hasta?:       Date;
+  regresaAprox?: Date;
 }
 
 export interface TripDto {
-  id:         string;
-  routeId:    string;
-  routeName:  string;
-  driverId:   string;
-  status:     TripStatus;
-  distanceKm: number;
-  startedAt:  Date;
-  endedAt:    Date | null;
+  id:                         string;
+  routeId:                    string;
+  routeName:                  string;
+  routeDuracionMinutos:       number | null;
+  driverId:                   string;
+  vehicleId:                  string | null;
+  status:                     TripStatus;
+  distanceKm:                 number;
+  startedAt:                  Date;
+  endedAt:                    Date | null;
+  tipoViaje:                  TripTipo | null;
+  scheduledDeparture:         Date | null;
+  scheduledReturn:            Date | null;
+  duracionActividadMinutos:   number | null;
+  cantidadPasajeros:          number | null;
+  disponibilidad?:            DisponibilidadDto;
 }
 
 export interface IngestPositionInput {
