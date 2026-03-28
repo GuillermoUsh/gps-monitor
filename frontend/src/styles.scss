@@ -15,3 +15,101 @@ html, body {
   height: 100%;
   font-family: var(--p-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
+
+/* ══════════════════════════════════════
+   Global Dark Mode  —  selector: .dark-mode on <html>
+   !important necesario: estilos de componente se inyectan
+   después del global stylesheet (mismo peso, gana cascade)
+   ══════════════════════════════════════ */
+.dark-mode {
+
+  /* ── Base ── */
+  body { background: #0f172a !important; color: #f1f5f9; }
+
+  /* ── Layouts ── */
+  .vehicles-layout,
+  .drivers-layout,
+  .routes-layout,
+  .trips-layout,
+  .users-layout,
+  .fleet-dashboard-layout,
+  .driver-layout,
+  .detail-layout,
+  .history-layout,
+  .map-layout {
+    background: #0f172a !important;
+  }
+
+  /* ── Topbar compartido ── */
+  .topbar {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+    .topbar__title { color: #f1f5f9 !important; }
+  }
+
+  /* ── Map topbar ── */
+  .map-topbar {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+    .map-topbar__title { color: #f1f5f9 !important; }
+  }
+  .side-panel  { background: #1e293b !important; border-left-color: #334155 !important; }
+  .panel-header { background: #1e293b !important; border-bottom-color: #334155 !important; color: #f1f5f9 !important; }
+  .panel-title  { color: #f1f5f9 !important; }
+
+  /* ── Action / filter bars ── */
+  .action-bar {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+  }
+  .filter-bar {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+  }
+  .filter-search {
+    background: #0f172a !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+    &::placeholder { color: #475569; }
+  }
+
+  /* ── Table / list wrappers ── */
+  .table-wrapper { background: #0f172a !important; }
+  .mobile-list   { background: #0f172a !important; }
+  .mobile-empty,
+  .mobile-loading { color: #475569 !important; }
+
+  /* ── Vehicle cards ── */
+  .vehicle-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    .vehicle-card__alias { color: #f1f5f9 !important; }
+    .vehicle-card__info  { color: #94a3b8 !important; }
+    .vehicle-card__meta  { color: #64748b !important; }
+    .vehicle-card__actions { border-top-color: #334155 !important; }
+  }
+
+  /* ── Driver cards ── */
+  .driver-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    .driver-card__name  { color: #f1f5f9 !important; }
+    .driver-card__email { color: #94a3b8 !important; }
+    .driver-card__meta  { color: #64748b !important; }
+    .driver-card__actions { border-top-color: #334155 !important; }
+  }
+
+  /* ── Route cards ── */
+  .route-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+  }
+
+  /* ── Trip cards ── */
+  .trip-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+  }
+}

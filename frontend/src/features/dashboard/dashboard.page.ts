@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { FleetService } from '../../core/api/fleet.service';
@@ -25,8 +25,11 @@ export class DashboardPage implements OnInit {
   private readonly routeService = inject(RouteService);
   private readonly userService  = inject(UserService);
   private readonly alertService = inject(AlertService);
+  private readonly document     = inject(DOCUMENT);
 
   readonly user = this.authService.currentUser;
+
+  darkMode = signal(false);
 
   fleetDashboard  = signal<FleetDashboardDto | null>(null);
   alerts          = this.alertService.alerts;
@@ -39,6 +42,16 @@ export class DashboardPage implements OnInit {
   ngOnInit(): void {
     this.alertService.start();
     this.loadAll();
+    const saved = localStorage.getItem('darkMode') === 'true';
+    this.darkMode.set(saved);
+    this.document.documentElement.classList.toggle('dark-mode', saved);
+  }
+
+  toggleDarkMode(): void {
+    const next = !this.darkMode();
+    this.darkMode.set(next);
+    this.document.documentElement.classList.toggle('dark-mode', next);
+    localStorage.setItem('darkMode', String(next));
   }
 
   private async loadAll(): Promise<void> {
