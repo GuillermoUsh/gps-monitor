@@ -2,15 +2,17 @@ import { BaseRepository } from './base.repository';
 import { VehicleDocumentRow } from '../shared/types';
 
 interface CreateDocumentData {
-  vehicle_id:       string;
-  tipo:             string;
-  descripcion?:     string | null;
+  vehicle_id:        string;
+  tipo:              string;
+  descripcion?:      string | null;
+  codigo?:           string | null;
   fecha_vencimiento: string;
 }
 
 interface UpdateDocumentData {
   tipo?:             string;
   descripcion?:      string | null;
+  codigo?:           string | null;
   fecha_vencimiento?: string;
 }
 
@@ -42,13 +44,14 @@ export class VehicleDocumentRepository extends BaseRepository {
 
   async create(data: CreateDocumentData): Promise<VehicleDocumentRow> {
     const rows = await this.query<VehicleDocumentRow>(
-      `INSERT INTO vehicle_documents (vehicle_id, tipo, descripcion, fecha_vencimiento)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO vehicle_documents (vehicle_id, tipo, descripcion, codigo, fecha_vencimiento)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [
         data.vehicle_id,
         data.tipo,
         data.descripcion ?? null,
+        data.codigo ?? null,
         data.fecha_vencimiento,
       ],
     );

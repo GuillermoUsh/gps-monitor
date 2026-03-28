@@ -96,18 +96,22 @@ const createDriverDocumentSchema = z.object({
 
 // ── Vehicle document schemas ──────────────────────────────────────────────────
 
+const DOC_TIPOS = ['seguro', 'vtv', 'habilitacion_turistica', 'matafuego', 'otro'] as const;
+
 const createDocumentSchema = z.object({
   body: z.object({
-    tipo:              z.enum(['seguro', 'vtv', 'habilitacion_turistica', 'otro']),
+    tipo:              z.enum(DOC_TIPOS),
     descripcion:       z.string().optional().nullable(),
+    codigo:            z.string().optional().nullable(),
     fecha_vencimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)'),
   }),
 });
 
 const updateDocumentSchema = z.object({
   body: z.object({
-    tipo:              z.enum(['seguro', 'vtv', 'habilitacion_turistica', 'otro']).optional(),
+    tipo:              z.enum(DOC_TIPOS).optional(),
     descripcion:       z.string().optional().nullable(),
+    codigo:            z.string().optional().nullable(),
     fecha_vencimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)').optional(),
   }),
 });
@@ -237,6 +241,24 @@ router.post(
   requireRole([USER_ROLE.ADMIN]),
   validate(createMaintenanceSchema),
   MaintenanceController.create,
+);
+
+const updateMaintenanceSchema = z.object({
+  body: z.object({
+    tipo:                  z.string().min(1).optional(),
+    descripcion:           z.string().optional().nullable(),
+    fecha:                 z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)').optional(),
+    kilometraje:           z.number().int().min(0).optional().nullable(),
+    proximo_service_km:    z.number().int().min(0).optional().nullable(),
+    proximo_service_fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)').optional().nullable(),
+  }),
+});
+
+router.patch(
+  '/maintenances/:id',
+  requireRole([USER_ROLE.ADMIN]),
+  validate(updateMaintenanceSchema),
+  MaintenanceController.update,
 );
 
 export default router;

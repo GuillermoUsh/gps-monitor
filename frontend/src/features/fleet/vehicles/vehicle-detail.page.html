@@ -166,6 +166,7 @@
                 <ng-template #header>
                   <tr>
                     <th>Tipo</th>
+                    <th>Código</th>
                     <th>Descripción</th>
                     <th>Vencimiento</th>
                     <th>Días restantes</th>
@@ -175,6 +176,7 @@
                 <ng-template #body let-doc>
                   <tr>
                     <td>{{ doc.tipo }}</td>
+                    <td class="mono">{{ doc.codigo ?? '—' }}</td>
                     <td>{{ doc.descripcion ?? '—' }}</td>
                     <td>{{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}</td>
                     <td>
@@ -183,8 +185,12 @@
                       } @else { <span class="text-gray-400">—</span> }
                     </td>
                     <td>
-                      <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
-                        size="small" (onClick)="deleteDocument(doc.id)" />
+                      <div style="display:flex;gap:.25rem">
+                        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true"
+                          size="small" (onClick)="openEditDocDialog(doc)" pTooltip="Editar" />
+                        <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                          size="small" (onClick)="deleteDocument(doc.id)" pTooltip="Eliminar" />
+                      </div>
                     </td>
                   </tr>
                 </ng-template>
@@ -205,6 +211,9 @@
                         [severity]="getDocSeverity(doc.diasRestantes)" />
                     }
                   </div>
+                  @if (doc.codigo) {
+                    <div class="item-card__sub mono">Cód: {{ doc.codigo }}</div>
+                  }
                   @if (doc.descripcion) {
                     <div class="item-card__sub">{{ doc.descripcion }}</div>
                   }
@@ -212,6 +221,8 @@
                     <i class="pi pi-calendar"></i> {{ doc.fecha_vencimiento | date:'dd/MM/yyyy' }}
                   </div>
                   <div class="item-card__actions">
+                    <p-button icon="pi pi-pencil" label="Editar" severity="secondary" [text]="true"
+                      size="small" (onClick)="openEditDocDialog(doc)" />
                     <p-button icon="pi pi-trash" label="Eliminar" severity="danger" [text]="true"
                       size="small" (onClick)="deleteDocument(doc.id)" />
                   </div>
@@ -251,8 +262,8 @@
                     <td>{{ m.proximo_service_km !== null ? (m.proximo_service_km | number) + ' km' : '—' }}</td>
                     <td>{{ m.proximo_service_fecha ? (m.proximo_service_fecha | date:'dd/MM/yyyy') : '—' }}</td>
                     <td>
-                      <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
-                        size="small" (onClick)="openMaintDetail(m)" pTooltip="Ver detalle" />
+                      <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true"
+                        size="small" (onClick)="openEditMaintDialog(m)" pTooltip="Editar" />
                     </td>
                   </tr>
                 </ng-template>
@@ -282,8 +293,8 @@
                     }
                   </div>
                   <div class="item-card__actions">
-                    <p-button icon="pi pi-eye" label="Ver detalle" severity="info" [text]="true"
-                      size="small" (onClick)="openMaintDetail(m)" />
+                    <p-button icon="pi pi-pencil" label="Editar" severity="secondary" [text]="true"
+                      size="small" (onClick)="openEditMaintDialog(m)" />
                   </div>
                 </div>
               }
@@ -296,59 +307,9 @@
     </div>
   }
 
-  <!-- Maintenance detail dialog -->
-  <p-dialog
-    header="Detalle de mantenimiento"
-    [visible]="showMaintDetailDialog()"
-    (visibleChange)="showMaintDetailDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '22rem' }"
-    [draggable]="false"
-  >
-    @if (selectedMaint()) {
-      <div class="detail-list">
-        <div class="detail-item">
-          <span class="detail-item__label">Tipo</span>
-          <span class="detail-item__value">{{ selectedMaint()!.tipo }}</span>
-        </div>
-        @if (selectedMaint()!.descripcion) {
-          <div class="detail-item">
-            <span class="detail-item__label">Descripción</span>
-            <span class="detail-item__value">{{ selectedMaint()!.descripcion }}</span>
-          </div>
-        }
-        <div class="detail-item">
-          <span class="detail-item__label">Fecha</span>
-          <span class="detail-item__value">{{ selectedMaint()!.fecha | date:'dd/MM/yyyy' }}</span>
-        </div>
-        @if (selectedMaint()!.kilometraje !== null) {
-          <div class="detail-item">
-            <span class="detail-item__label">Kilometraje</span>
-            <span class="detail-item__value">{{ selectedMaint()!.kilometraje | number }} km</span>
-          </div>
-        }
-        @if (selectedMaint()!.proximo_service_km !== null) {
-          <div class="detail-item">
-            <span class="detail-item__label">Próximo service (km)</span>
-            <span class="detail-item__value">{{ selectedMaint()!.proximo_service_km | number }} km</span>
-          </div>
-        }
-        @if (selectedMaint()!.proximo_service_fecha) {
-          <div class="detail-item">
-            <span class="detail-item__label">Próxima fecha service</span>
-            <span class="detail-item__value">{{ selectedMaint()!.proximo_service_fecha | date:'dd/MM/yyyy' }}</span>
-          </div>
-        }
-      </div>
-    }
-    <ng-template #footer>
-      <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="showMaintDetailDialog.set(false)" />
-    </ng-template>
-  </p-dialog>
-
   <!-- Document dialog -->
   <p-dialog
-    header="Agregar documento"
+    [header]="editingDocId ? 'Editar documento' : 'Agregar documento'"
     [visible]="showDocDialog()"
     (visibleChange)="showDocDialog.set($event)"
     [modal]="true"
@@ -373,6 +334,11 @@
         <input id="docDesc" pInputText [(ngModel)]="docDescripcion" placeholder="Opcional" />
       </div>
       <div class="field">
+        <label for="docCodigo">Código identificador</label>
+        <input id="docCodigo" pInputText [(ngModel)]="docCodigo"
+          [placeholder]="docTipo === 'matafuego' ? 'Nº de serie del matafuego' : 'Código o número de referencia'" />
+      </div>
+      <div class="field">
         <label for="docVenc">Fecha de vencimiento *</label>
         <p-datepicker
           inputId="docVenc"
@@ -391,7 +357,7 @@
 
   <!-- Maintenance dialog -->
   <p-dialog
-    header="Registrar mantenimiento"
+    [header]="editingMaintId ? 'Editar mantenimiento' : 'Registrar mantenimiento'"
     [visible]="showMaintDialog()"
     (visibleChange)="showMaintDialog.set($event)"
     [modal]="true"

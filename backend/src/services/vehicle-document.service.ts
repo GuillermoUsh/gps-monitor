@@ -11,12 +11,14 @@ export const VehicleDocumentService = {
   async create(vehicleId: string, data: {
     tipo:              string;
     descripcion?:      string | null;
+    codigo?:           string | null;
     fecha_vencimiento: string;
   }) {
     return vehicleDocumentRepository.create({
       vehicle_id:        vehicleId,
       tipo:              data.tipo,
       descripcion:       data.descripcion,
+      codigo:            data.codigo,
       fecha_vencimiento: data.fecha_vencimiento,
     });
   },
@@ -24,6 +26,7 @@ export const VehicleDocumentService = {
   async update(id: string, data: {
     tipo?:              string;
     descripcion?:       string | null;
+    codigo?:            string | null;
     fecha_vencimiento?: string;
   }) {
     const updated = await vehicleDocumentRepository.update(id, data);

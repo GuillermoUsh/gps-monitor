@@ -73,22 +73,16 @@ export class VehicleDetailPage implements OnInit {
   // Document dialog
   showDocDialog = signal(false);
   savingDoc = signal(false);
+  editingDocId: string | null = null;
   docTipo = '';
   docDescripcion = '';
+  docCodigo = '';
   docFechaVencimiento: Date | null = null;
-
-  // Maintenance detail dialog
-  showMaintDetailDialog = signal(false);
-  selectedMaint = signal<MaintenanceDto | null>(null);
-
-  openMaintDetail(m: MaintenanceDto): void {
-    this.selectedMaint.set(m);
-    this.showMaintDetailDialog.set(true);
-  }
 
   // Maintenance dialog
   showMaintDialog = signal(false);
   savingMaint = signal(false);
+  editingMaintId: string | null = null;
   maintTipo = '';
   maintDescripcion = '';
   maintFecha: Date | null = null;
@@ -100,6 +94,7 @@ export class VehicleDetailPage implements OnInit {
     { label: 'Seguro', value: 'seguro' },
     { label: 'VTV', value: 'vtv' },
     { label: 'Habilitación turística', value: 'habilitacion_turistica' },
+    { label: 'Matafuego', value: 'matafuego' },
     { label: 'Otro', value: 'otro' },
   ];
 
@@ -166,25 +161,45 @@ export class VehicleDetailPage implements OnInit {
   }
 
   openDocDialog(): void {
+    this.editingDocId = null;
     this.docTipo = '';
     this.docDescripcion = '';
+    this.docCodigo = '';
     this.docFechaVencimiento = null;
+    this.showDocDialog.set(true);
+  }
+
+  openEditDocDialog(doc: VehicleDocumentDto): void {
+    this.editingDocId = doc.id;
+    this.docTipo = doc.tipo;
+    this.docDescripcion = doc.descripcion ?? '';
+    this.docCodigo = doc.codigo ?? '';
+    this.docFechaVencimiento = new Date(doc.fecha_vencimiento);
     this.showDocDialog.set(true);
   }
 
   async saveDocument(): Promise<void> {
     if (!this.docTipo || !this.docFechaVencimiento) return;
 
+    const payload = {
+      tipo: this.docTipo,
+      descripcion: this.docDescripcion || null,
+      codigo: this.docCodigo || null,
+      fecha_vencimiento: this.docFechaVencimiento.toISOString().split('T')[0],
+    };
+
     this.savingDoc.set(true);
     try {
-      const doc = await firstValueFrom(this.fleetService.createDocument(this.vehicleId(), {
-        tipo: this.docTipo,
-        descripcion: this.docDescripcion || null,
-        fecha_vencimiento: this.docFechaVencimiento.toISOString().split('T')[0],
-      }));
-      this.documents.update(list => [doc, ...list]);
+      if (this.editingDocId) {
+        const doc = await firstValueFrom(this.fleetService.updateDocument(this.editingDocId, payload));
+        this.documents.update(list => list.map(d => d.id === this.editingDocId ? doc : d));
+        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: 'Documento actualizado' });
+      } else {
+        const doc = await firstValueFrom(this.fleetService.createDocument(this.vehicleId(), payload));
+        this.documents.update(list => [doc, ...list]);
+        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Documento agregado' });
+      }
       this.showDocDialog.set(false);
-      this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Documento agregado' });
     } catch {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el documento' });
     } finally {
@@ -203,6 +218,7 @@ export class VehicleDetailPage implements OnInit {
   }
 
   openMaintDialog(): void {
+    this.editingMaintId = null;
     this.maintTipo = '';
     this.maintDescripcion = '';
     this.maintFecha = null;
@@ -212,24 +228,43 @@ export class VehicleDetailPage implements OnInit {
     this.showMaintDialog.set(true);
   }
 
+  openEditMaintDialog(m: MaintenanceDto): void {
+    this.editingMaintId = m.id;
+    this.maintTipo = m.tipo;
+    this.maintDescripcion = m.descripcion ?? '';
+    this.maintFecha = new Date(m.fecha);
+    this.maintKilometraje = m.kilometraje;
+    this.maintProximoKm = m.proximo_service_km;
+    this.maintProximoFecha = m.proximo_service_fecha ? new Date(m.proximo_service_fecha) : null;
+    this.showMaintDialog.set(true);
+  }
+
   async saveMaintenance(): Promise<void> {
     if (!this.maintTipo || !this.maintFecha) return;
 
+    const payload = {
+      tipo: this.maintTipo,
+      descripcion: this.maintDescripcion || null,
+      fecha: this.maintFecha.toISOString().split('T')[0],
+      kilometraje: this.maintKilometraje,
+      proximo_service_km: this.maintProximoKm,
+      proximo_service_fecha: this.maintProximoFecha
+        ? this.maintProximoFecha.toISOString().split('T')[0]
+        : null,
+    };
+
     this.savingMaint.set(true);
     try {
-      const maint = await firstValueFrom(this.fleetService.createMaintenance(this.vehicleId(), {
-        tipo: this.maintTipo,
-        descripcion: this.maintDescripcion || null,
-        fecha: this.maintFecha.toISOString().split('T')[0],
-        kilometraje: this.maintKilometraje,
-        proximo_service_km: this.maintProximoKm,
-        proximo_service_fecha: this.maintProximoFecha
-          ? this.maintProximoFecha.toISOString().split('T')[0]
-          : null,
-      }));
-      this.maintenances.update(list => [maint, ...list]);
+      if (this.editingMaintId) {
+        const maint = await firstValueFrom(this.fleetService.updateMaintenance(this.editingMaintId, payload));
+        this.maintenances.update(list => list.map(m => m.id === this.editingMaintId ? maint : m));
+        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: 'Mantenimiento actualizado' });
+      } else {
+        const maint = await firstValueFrom(this.fleetService.createMaintenance(this.vehicleId(), payload));
+        this.maintenances.update(list => [maint, ...list]);
+        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Mantenimiento registrado' });
+      }
       this.showMaintDialog.set(false);
-      this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Mantenimiento registrado' });
     } catch {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el mantenimiento' });
     } finally {
