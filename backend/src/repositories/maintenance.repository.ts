@@ -44,6 +44,20 @@ export class MaintenanceRepository extends BaseRepository {
     return rows[0];
   }
 
+  async update(id: string, data: Partial<Omit<CreateMaintenanceData, 'vehicle_id'>>): Promise<MaintenanceRow | null> {
+    const fields = Object.keys(data) as (keyof typeof data)[];
+    if (fields.length === 0) return this.queryOne<MaintenanceRow>('SELECT * FROM maintenances WHERE id = $1', [id]);
+
+    const setClauses = fields.map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = fields.map(key => data[key]);
+
+    const rows = await this.query<MaintenanceRow>(
+      `UPDATE maintenances SET ${setClauses} WHERE id = $1 RETURNING *`,
+      [id, ...values],
+    );
+    return rows[0] ?? null;
+  }
+
   async findPendingServices(): Promise<PendingServiceRow[]> {
     return this.query<PendingServiceRow>(
       `SELECT DISTINCT ON (m.vehicle_id)

@@ -20,4 +20,13 @@ export const MaintenanceController = {
       next(err);
     }
   },
+
+  async update(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const maintenance = await MaintenanceService.update(req.params.id, req.body);
+      res.json({ status: 'success', data: maintenance });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
