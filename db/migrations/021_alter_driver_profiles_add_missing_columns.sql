@@ -1,0 +1,4 @@
+ALTER TABLE driver_profiles
+  ADD COLUMN IF NOT EXISTS licencia TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS vencimiento_licencia DATE,
+  ADD COLUMN IF NOT EXISTS telefono TEXT;
