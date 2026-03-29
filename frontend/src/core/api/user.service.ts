@@ -9,6 +9,7 @@ export interface UserDto {
   email: string;
   role: string;
   verified: boolean;
+  created_at: string;
 }
 
 export interface CreateUserInput {

@@ -47,4 +47,24 @@
     font-weight: 500;
     color: #374151;
   }
+
+  &--checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+
+    label { margin: 0; }
+  }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.password-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }

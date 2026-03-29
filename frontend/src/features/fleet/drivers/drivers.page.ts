@@ -45,13 +45,10 @@ export class DriversPage implements OnInit {
   loading = signal(false);
   saving = signal(false);
   showDialog = signal(false);
-  showCreateDialog = signal(false);
-  showCredentialsDialog = signal(false);
 
   editingUserId: string | null = null;
   editingEmail = '';
 
-  // Edit form fields
   formNombre = '';
   formApellido = '';
   formLicencia = '';
@@ -59,18 +56,6 @@ export class DriversPage implements OnInit {
   formTelefono = '';
   formCursoPuerto = false;
   formNotas = '';
-
-  // Create form fields
-  createNombre = '';
-  createApellido = '';
-  createEmail = '';
-  createTelefono = '';
-  createLicencia = '';
-  createVencimiento: Date | null = null;
-
-  // Credentials dialog
-  createdEmail = '';
-  createdPassword = '';
 
   ngOnInit(): void {
     this.loadDrivers();
@@ -82,11 +67,7 @@ export class DriversPage implements OnInit {
       const data = await firstValueFrom(this.fleetService.getDriverProfiles());
       this.drivers.set(data);
     } catch {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudieron cargar los choferes',
-      });
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los choferes' });
     } finally {
       this.loading.set(false);
     }
@@ -98,9 +79,7 @@ export class DriversPage implements OnInit {
     this.formNombre = driver.nombre ?? '';
     this.formApellido = driver.apellido ?? '';
     this.formLicencia = driver.licencia ?? '';
-    this.formVencimiento = driver.vencimiento_licencia
-      ? new Date(driver.vencimiento_licencia)
-      : null;
+    this.formVencimiento = driver.vencimiento_licencia ? new Date(driver.vencimiento_licencia) : null;
     this.formTelefono = driver.telefono ?? '';
     this.formCursoPuerto = driver.curso_puerto ?? false;
     this.formNotas = driver.notas ?? '';
@@ -125,9 +104,7 @@ export class DriversPage implements OnInit {
           notas: this.formNotas || null,
         }),
       );
-      this.drivers.update(list =>
-        list.map(d => d.user_id === this.editingUserId ? updated : d),
-      );
+      this.drivers.update(list => list.map(d => d.user_id === this.editingUserId ? updated : d));
       this.showDialog.set(false);
       this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Perfil actualizado' });
     } catch {
@@ -137,55 +114,9 @@ export class DriversPage implements OnInit {
     }
   }
 
-  openCreateDialog(): void {
-    this.createNombre = '';
-    this.createApellido = '';
-    this.createEmail = '';
-    this.createTelefono = '';
-    this.createLicencia = '';
-    this.createVencimiento = null;
-    this.showCreateDialog.set(true);
-  }
-
-  async saveNewDriver(): Promise<void> {
-    if (!this.createNombre || !this.createApellido || !this.createEmail) return;
-
-    this.saving.set(true);
-    try {
-      const result = await firstValueFrom(
-        this.fleetService.createDriver({
-          nombre: this.createNombre,
-          apellido: this.createApellido,
-          email: this.createEmail,
-          telefono: this.createTelefono || null,
-          licencia: this.createLicencia || null,
-          vencimiento_licencia: this.createVencimiento
-            ? this.createVencimiento.toISOString().split('T')[0]
-            : null,
-        }),
-      );
-      this.drivers.update(list => [result.driver, ...list]);
-      this.showCreateDialog.set(false);
-      this.createdEmail = this.createEmail;
-      this.createdPassword = result.password;
-      this.showCredentialsDialog.set(true);
-    } catch {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudo crear el chofer',
-      });
-    } finally {
-      this.saving.set(false);
-    }
-  }
-
   getLicenciaSeverity(vencimiento: string | null): 'danger' | 'warn' | 'success' | 'secondary' {
     if (!vencimiento) return 'secondary';
-    const today = new Date();
-    const exp = new Date(vencimiento);
-    const diffMs = exp.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((new Date(vencimiento).getTime() - Date.now()) / 86_400_000);
     if (diffDays < 0) return 'danger';
     if (diffDays <= 30) return 'warn';
     return 'success';
@@ -193,10 +124,7 @@ export class DriversPage implements OnInit {
 
   getLicenciaLabel(vencimiento: string | null): string {
     if (!vencimiento) return 'Sin fecha';
-    const today = new Date();
-    const exp = new Date(vencimiento);
-    const diffMs = exp.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((new Date(vencimiento).getTime() - Date.now()) / 86_400_000);
     if (diffDays < 0) return 'Vencida';
     if (diffDays <= 30) return `Vence en ${diffDays}d`;
     return new Date(vencimiento).toLocaleDateString('es-AR');

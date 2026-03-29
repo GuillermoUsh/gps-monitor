@@ -9,10 +9,6 @@
     <div class="topbar__right"></div>
   </div>
 
-  <div class="action-bar">
-    <p-button label="Nuevo chofer" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()" />
-  </div>
-
   <!-- Desktop: tabla -->
   <div class="table-wrapper desktop-only">
     <p-table
@@ -20,7 +16,7 @@
       [loading]="loading()"
       [paginator]="true"
       [rows]="20"
-      emptyMessage="Sin choferes registrados"
+      emptyMessage="Sin choferes registrados. Creá usuarios con rol Chofer desde la sección Usuarios."
     >
       <ng-template #header>
         <tr>
@@ -67,7 +63,7 @@
     @if (loading()) {
       <div class="mobile-loading"><i class="pi pi-spin pi-spinner"></i></div>
     } @else if (drivers().length === 0) {
-      <div class="mobile-empty">Sin choferes registrados.</div>
+      <div class="mobile-empty">Sin choferes. Creá usuarios con rol Chofer desde la sección Usuarios.</div>
     } @else {
       @for (driver of drivers(); track driver.user_id) {
         <div class="driver-card">
@@ -100,128 +96,6 @@
     }
   </div>
 
-  <!-- Create dialog -->
-  <p-dialog
-    header="Nuevo chofer"
-    [visible]="showCreateDialog()"
-    (visibleChange)="showCreateDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '30rem' }"
-    [draggable]="false"
-  >
-    <div class="dialog-body">
-      <div class="field-row">
-        <div class="field">
-          <label for="createNombre">Nombre <span class="text-red-500">*</span></label>
-          <input
-            id="createNombre"
-            pInputText
-            [(ngModel)]="createNombre"
-            placeholder="Ej: Juan"
-          />
-        </div>
-        <div class="field">
-          <label for="createApellido">Apellido <span class="text-red-500">*</span></label>
-          <input
-            id="createApellido"
-            pInputText
-            [(ngModel)]="createApellido"
-            placeholder="Ej: García"
-          />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="createEmail">Email <span class="text-red-500">*</span></label>
-        <input
-          id="createEmail"
-          pInputText
-          type="email"
-          [(ngModel)]="createEmail"
-          placeholder="chofer@ejemplo.com"
-        />
-      </div>
-
-      <div class="field">
-        <label for="createTelefono">Teléfono</label>
-        <input
-          id="createTelefono"
-          pInputText
-          [(ngModel)]="createTelefono"
-          placeholder="+54 9 11 1234-5678"
-        />
-      </div>
-
-      <div class="field">
-        <label for="createLicencia">N° de licencia</label>
-        <input
-          id="createLicencia"
-          pInputText
-          [(ngModel)]="createLicencia"
-          placeholder="Ej: 12345678"
-        />
-      </div>
-
-      <div class="field">
-        <label for="createVencimiento">Vencimiento de licencia</label>
-        <p-datepicker
-          inputId="createVencimiento"
-          [(ngModel)]="createVencimiento"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-          appendTo="body"
-        />
-      </div>
-    </div>
-
-    <ng-template #footer>
-      <p-button
-        label="Cancelar"
-        severity="secondary"
-        [text]="true"
-        (onClick)="showCreateDialog.set(false)"
-      />
-      <p-button
-        label="Crear chofer"
-        icon="pi pi-check"
-        [loading]="saving()"
-        [disabled]="!createNombre || !createApellido || !createEmail"
-        (onClick)="saveNewDriver()"
-      />
-    </ng-template>
-  </p-dialog>
-
-  <!-- Credentials dialog -->
-  <p-dialog
-    header="Chofer creado"
-    [visible]="showCredentialsDialog()"
-    (visibleChange)="showCredentialsDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '26rem' }"
-    [draggable]="false"
-  >
-    <div class="flex flex-column gap-3 pt-2">
-      <p class="text-sm text-color-secondary m-0">
-        Compartí estas credenciales con el chofer para que pueda ingresar al sistema. Deberá cambiar la contraseña en su primer acceso.
-      </p>
-      <div class="field">
-        <label class="font-semibold text-sm">Email</label>
-        <input pInputText [value]="createdEmail" readonly [style]="{ width: '100%' }" />
-      </div>
-      <div class="field">
-        <label class="font-semibold text-sm">Contraseña generada</label>
-        <input pInputText [value]="createdPassword" readonly [style]="{ width: '100%' }" />
-      </div>
-    </div>
-    <ng-template #footer>
-      <p-button
-        label="Cerrar"
-        icon="pi pi-check"
-        (onClick)="showCredentialsDialog.set(false)"
-      />
-    </ng-template>
-  </p-dialog>
-
   <!-- Edit dialog -->
   <p-dialog
     header="Editar perfil de chofer"
@@ -240,33 +114,17 @@
       <div class="field-row">
         <div class="field">
           <label for="nombre">Nombre</label>
-          <input
-            id="nombre"
-            pInputText
-            [(ngModel)]="formNombre"
-            placeholder="Ej: Juan"
-          />
+          <input id="nombre" pInputText [(ngModel)]="formNombre" placeholder="Ej: Juan" />
         </div>
-
         <div class="field">
           <label for="apellido">Apellido</label>
-          <input
-            id="apellido"
-            pInputText
-            [(ngModel)]="formApellido"
-            placeholder="Ej: García"
-          />
+          <input id="apellido" pInputText [(ngModel)]="formApellido" placeholder="Ej: García" />
         </div>
       </div>
 
       <div class="field">
         <label for="licencia">N° de licencia</label>
-        <input
-          id="licencia"
-          pInputText
-          [(ngModel)]="formLicencia"
-          placeholder="Ej: 12345678"
-        />
+        <input id="licencia" pInputText [(ngModel)]="formLicencia" placeholder="Ej: 12345678" />
       </div>
 
       <div class="field">
@@ -282,20 +140,11 @@
 
       <div class="field">
         <label for="telefono">Teléfono</label>
-        <input
-          id="telefono"
-          pInputText
-          [(ngModel)]="formTelefono"
-          placeholder="+54 9 11 1234-5678"
-        />
+        <input id="telefono" pInputText [(ngModel)]="formTelefono" placeholder="+54 9 11 1234-5678" />
       </div>
 
       <div class="field field--checkbox">
-        <p-checkbox
-          inputId="cursoPuerto"
-          [(ngModel)]="formCursoPuerto"
-          [binary]="true"
-        />
+        <p-checkbox inputId="cursoPuerto" [(ngModel)]="formCursoPuerto" [binary]="true" />
         <label for="cursoPuerto">Curso de puerto habilitado</label>
       </div>
 
@@ -313,18 +162,8 @@
     </div>
 
     <ng-template #footer>
-      <p-button
-        label="Cancelar"
-        severity="secondary"
-        [text]="true"
-        (onClick)="showDialog.set(false)"
-      />
-      <p-button
-        label="Guardar"
-        icon="pi pi-check"
-        [loading]="saving()"
-        (onClick)="saveDriver()"
-      />
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showDialog.set(false)" />
+      <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="saveDriver()" />
     </ng-template>
   </p-dialog>
 
